@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pó e Sangue — Entrar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="site-nav" aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="ficha.html">Ficha</a>
+        <a href="rolagens.html">Rolagens</a>
+        <a href="habilidades.html">Habilidades</a>
+        <a href="livro-jogador.html">Livro do jogador</a>
+        <a href="login.html" class="nav-current nav-auth-link" aria-current="page">Entrar</a>
+    </nav>
+
+    <header class="page-header">
+        <h1>Pó e Sangue</h1>
+        <p class="quote">Acesse ou cadastre sua conta para salvar sua ficha.</p>
+    </header>
+
+    <div class="auth-wrap">
+        <div class="auth-card section">
+            <div class="auth-tabs" role="tablist">
+                <button id="tabEntrar" class="auth-tab auth-tab--active" role="tab"
+                        aria-selected="true" onclick="showTab('entrar')">Entrar</button>
+                <button id="tabCadastrar" class="auth-tab" role="tab"
+                        aria-selected="false" onclick="showTab('cadastrar')">Cadastrar</button>
+            </div>
+
+            <p id="authMsg" class="auth-msg" hidden></p>
+
+            <!-- Formulário: Entrar -->
+            <form id="formEntrar" onsubmit="fazerLogin(event)" novalidate>
+                <h2>Entrar na conta</h2>
+                <label for="loginEmail">E-mail:</label>
+                <input type="email" id="loginEmail" placeholder="seu@email.com" required autocomplete="email">
+                <label for="loginSenha">Senha:</label>
+                <input type="password" id="loginSenha" placeholder="••••••" required autocomplete="current-password">
+                <div class="btn-bar" style="margin-top:18px;">
+                    <button type="submit" id="btnEntrar">Entrar</button>
+                </div>
+                <p class="note" style="margin-top:12px;text-align:center;">
+                    Esqueceu a senha?
+                    <a href="#" onclick="enviarResetSenha(event)" style="color:var(--bege-escuro)">Redefinir por e-mail</a>
+                </p>
+            </form>
+
+            <!-- Formulário: Cadastrar -->
+            <form id="formCadastrar" onsubmit="fazerCadastro(event)" hidden novalidate>
+                <h2>Criar conta</h2>
+                <label for="cadEmail">E-mail:</label>
+                <input type="email" id="cadEmail" placeholder="seu@email.com" required autocomplete="email">
+                <label for="cadSenha">Senha <span class="note">(mínimo 6 caracteres)</span>:</label>
+                <input type="password" id="cadSenha" placeholder="••••••" required autocomplete="new-password">
+                <label for="cadSenha2">Confirmar senha:</label>
+                <input type="password" id="cadSenha2" placeholder="••••••" required autocomplete="new-password">
+                <div class="btn-bar" style="margin-top:18px;">
+                    <button type="submit" id="btnCadastrar">Criar conta</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Painel mostrado quando já está logado -->
+        <div id="painelLogado" class="auth-card section" hidden>
+            <h2>Você já está logado</h2>
+            <p>Logado como: <strong id="logadoEmail"></strong></p>
+            <div class="btn-bar" style="margin-top:18px;">
+                <a href="ficha.html" class="link-button">Ir para a Ficha</a>
+                <button class="secondary" onclick="fazerLogout()">Sair da conta</button>
+            </div>
+            <p id="adminLinkWrap" hidden style="margin-top:14px;text-align:center;">
+                <a href="admin.html" style="color:var(--vermelho);font-family:'Rye',serif;letter-spacing:.05em;">
+                    ☽ Painel do Mestre
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var auth = null;
+
+        function isConfigured() {
+            return window.FIREBASE_CONFIG &&
+                   window.FIREBASE_CONFIG.apiKey !== 'COLE_AQUI';
+        }
+
+        function showMsg(text, isError) {
+            var el = document.getElementById('authMsg');
+            el.textContent = text;
+            el.className = 'auth-msg' + (isError ? ' auth-msg--erro' : ' auth-msg--ok');
+            el.hidden = false;
+        }
+
+        function hideMsg() {
+            var el = document.getElementById('authMsg');
+            el.hidden = true;
+        }
+
+        function setLoading(btnId, loading) {
+            var btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.disabled = loading;
+            btn.textContent = loading ? 'Aguarde…' : btn.dataset.label;
+        }
+
+        window.showTab = function (tab) {
+            var isEntrar = tab === 'entrar';
+            document.getElementById('formEntrar').hidden = !isEntrar;
+            document.getElementById('formCadastrar').hidden = isEntrar;
+            document.getElementById('tabEntrar').classList.toggle('auth-tab--active', isEntrar);
+            document.getElementById('tabCadastrar').classList.toggle('auth-tab--active', !isEntrar);
+            document.getElementById('tabEntrar').setAttribute('aria-selected', isEntrar);
+            document.getElementById('tabCadastrar').setAttribute('aria-selected', !isEntrar);
+            hideMsg();
+        };
+
+        window.fazerLogin = function (e) {
+            e.preventDefault();
+            if (!auth) { showMsg('Firebase não configurado. Verifique firebase-config.js.', true); return; }
+            var email = document.getElementById('loginEmail').value.trim();
+            var senha = document.getElementById('loginSenha').value;
+            setLoading('btnEntrar', true);
+            hideMsg();
+            auth.signInWithEmailAndPassword(email, senha)
+                .then(function () {
+                    showMsg('Login realizado! Redirecionando…', false);
+                    setTimeout(function () { window.location.href = 'ficha.html'; }, 800);
+                })
+                .catch(function (err) {
+                    setLoading('btnEntrar', false);
+                    showMsg(traduzirErro(err.code), true);
+                });
+        };
+
+        window.fazerCadastro = function (e) {
+            e.preventDefault();
+            if (!auth) { showMsg('Firebase não configurado. Verifique firebase-config.js.', true); return; }
+            var email = document.getElementById('cadEmail').value.trim();
+            var senha = document.getElementById('cadSenha').value;
+            var senha2 = document.getElementById('cadSenha2').value;
+            if (senha !== senha2) { showMsg('As senhas não coincidem.', true); return; }
+            if (senha.length < 6) { showMsg('A senha deve ter ao menos 6 caracteres.', true); return; }
+            setLoading('btnCadastrar', true);
+            hideMsg();
+            auth.createUserWithEmailAndPassword(email, senha)
+                .then(function () {
+                    showMsg('Conta criada! Redirecionando…', false);
+                    setTimeout(function () { window.location.href = 'ficha.html'; }, 800);
+                })
+                .catch(function (err) {
+                    setLoading('btnCadastrar', false);
+                    showMsg(traduzirErro(err.code), true);
+                });
+        };
+
+        window.fazerLogout = function () {
+            if (auth) auth.signOut();
+        };
+
+        window.enviarResetSenha = function (e) {
+            e.preventDefault();
+            if (!auth) return;
+            var email = document.getElementById('loginEmail').value.trim();
+            if (!email) { showMsg('Digite o e-mail no campo acima.', true); return; }
+            auth.sendPasswordResetEmail(email)
+                .then(function () { showMsg('E-mail de redefinição enviado!', false); })
+                .catch(function (err) { showMsg(traduzirErro(err.code), true); });
+        };
+
+        function traduzirErro(code) {
+            var map = {
+                'auth/user-not-found':       'E-mail não cadastrado.',
+                'auth/wrong-password':       'Senha incorreta.',
+                'auth/invalid-email':        'E-mail inválido.',
+                'auth/email-already-in-use': 'Este e-mail já está em uso.',
+                'auth/weak-password':        'Senha muito fraca.',
+                'auth/too-many-requests':    'Muitas tentativas. Tente mais tarde.',
+                'auth/invalid-credential':   'E-mail ou senha incorretos.'
+            };
+            return map[code] || ('Erro: ' + code);
+        }
+
+        document.getElementById('btnEntrar').dataset.label = 'Entrar';
+        document.getElementById('btnCadastrar').dataset.label = 'Criar conta';
+
+        if (!isConfigured()) {
+            showMsg('⚠ Firebase não configurado. Preencha firebase-config.js antes de usar o sistema de contas.', true);
+            document.getElementById('authMsg').hidden = false;
+        } else {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(window.FIREBASE_CONFIG);
+                }
+                auth = firebase.auth();
+                auth.onAuthStateChanged(function (user) {
+                    var formArea = document.getElementById('formEntrar').closest('.auth-card');
+                    var painel = document.getElementById('painelLogado');
+                    if (user) {
+                        formArea.hidden = true;
+                        painel.hidden = false;
+                        document.getElementById('logadoEmail').textContent = user.email;
+                        var adminWrap = document.getElementById('adminLinkWrap');
+                        if (window.ADMIN_EMAIL && user.email === window.ADMIN_EMAIL) {
+                            adminWrap.hidden = false;
+                        }
+                    } else {
+                        formArea.hidden = false;
+                        painel.hidden = true;
+                    }
+                });
+            } catch (err) {
+                showMsg('Erro ao inicializar Firebase: ' + err.message, true);
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

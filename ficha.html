@@ -17,6 +17,7 @@
         <a href="rolagens.html">Rolagens</a>
         <a href="habilidades.html">Habilidades</a>
         <a href="livro-jogador.html">Livro do jogador</a>
+        <a href="login.html" class="nav-auth-link" id="navAuthLink">Entrar</a>
     </nav>
 
     <header class="page-header">
@@ -24,6 +25,26 @@
         <p class="quote">Um RPG nas fronteiras do inferno · inspirado em <em>Meridiano de Sangue</em> (Cormac McCarthy).</p>
         <p class="quote">A guerra é deus.</p>
     </header>
+
+    <!-- Banner: não logado -->
+    <div id="cloudBanner" class="cloud-banner" hidden>
+        <span>💾 Salve sua ficha na nuvem e acesse de qualquer dispositivo.</span>
+        <a href="login.html" class="cloud-banner-btn">Entrar / Cadastrar</a>
+    </div>
+
+    <!-- Painel: logado -->
+    <div id="cloudPanel" class="cloud-panel" hidden>
+        <div class="cloud-panel-user">
+            <span class="cloud-panel-email" id="cloudUserEmail"></span>
+            <a href="login.html" class="cloud-panel-link">Trocar conta</a>
+        </div>
+        <div class="cloud-panel-actions">
+            <span id="cloudStatus" class="cloud-status"></span>
+            <button type="button" onclick="salvarNaNuvem()" class="cloud-btn">Salvar na nuvem</button>
+            <button type="button" onclick="carregarDaNuvem()" class="cloud-btn cloud-btn--sec">Carregar da nuvem</button>
+            <button type="button" onclick="sairDaConta()" class="cloud-btn cloud-btn--sec">Sair</button>
+        </div>
+    </div>
 
     <div class="wanted-wrap">
         <div class="wanted-poster" aria-label="Cartaz de procurado">
@@ -141,6 +162,10 @@
         </div>
     </form>
 
+    <script src="firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="ficha.js"></script>
 </body>
 </html>

@@ -1013,3 +1013,260 @@ button.secondary {
     .attributes-grid { grid-template-columns: 1fr; }
     .dice-buttons { grid-template-columns: 1fr; }
 }
+
+/* ── Auth nav link ─────────────────────────────────────────── */
+.nav-auth-link {
+    border-left-color: var(--vermelho) !important;
+    background: linear-gradient(
+        180deg,
+        var(--vermelho) 0%,
+        var(--vermelho-escuro) 100%
+    ) !important;
+}
+
+/* ── Cloud banner (não logado) ─────────────────────────────── */
+.cloud-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 820px;
+    margin: 0 auto 18px;
+    padding: 12px 18px;
+    background: rgba(92, 61, 46, 0.25);
+    border: 1px dashed var(--marrom-claro);
+    border-radius: 3px;
+    font-size: 0.88rem;
+    color: var(--bege-escuro);
+}
+
+.cloud-banner-btn {
+    display: inline-block;
+    padding: 7px 16px;
+    background: linear-gradient(180deg, var(--vermelho) 0%, var(--vermelho-escuro) 100%);
+    color: var(--bege);
+    border: 1px solid var(--marrom-claro);
+    border-radius: 2px;
+    font-family: 'Rye', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* ── Cloud panel (logado) ──────────────────────────────────── */
+.cloud-panel {
+    max-width: 820px;
+    margin: 0 auto 18px;
+    padding: 12px 18px;
+    background: rgba(26, 60, 30, 0.25);
+    border: 1px solid #2e5c30;
+    border-radius: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.cloud-panel-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cloud-panel-email {
+    font-size: 0.85rem;
+    color: var(--bege-escuro);
+}
+
+.cloud-panel-link {
+    font-size: 0.78rem;
+    color: var(--marrom-claro);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.cloud-panel-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cloud-status {
+    font-size: 0.82rem;
+    color: #7dbf80;
+    min-width: 140px;
+}
+
+.cloud-btn {
+    flex: none;
+    min-width: 0;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    border-radius: 2px;
+    border: 1px solid var(--marrom-claro);
+    cursor: pointer;
+    font-family: 'Rye', serif;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, var(--vermelho) 0%, var(--vermelho-escuro) 100%);
+    color: var(--bege);
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.cloud-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 26, 26, 0.4);
+}
+
+.cloud-btn--sec {
+    background: linear-gradient(180deg, var(--marrom-claro) 0%, var(--marrom) 100%);
+}
+
+/* ── Página de login ───────────────────────────────────────── */
+.auth-wrap {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.auth-card {
+    margin-bottom: 20px;
+}
+
+.auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--marrom);
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 10px 16px;
+    font-family: 'Rye', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bege-escuro);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    border-radius: 0;
+    transform: none;
+    box-shadow: none;
+    min-width: 0;
+}
+
+.auth-tab:hover {
+    color: var(--bege);
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-tab--active {
+    color: var(--bege);
+    border-bottom-color: var(--vermelho);
+}
+
+.auth-msg {
+    padding: 10px 14px;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+}
+
+.auth-msg--erro {
+    background: rgba(139, 26, 26, 0.2);
+    border: 1px solid var(--vermelho);
+    color: #e88;
+}
+
+.auth-msg--ok {
+    background: rgba(26, 80, 30, 0.2);
+    border: 1px solid #2e6030;
+    color: #7dbf80;
+}
+
+/* ── Painel admin ──────────────────────────────────────────── */
+.admin-ficha-card {
+    border: 1px solid var(--marrom);
+    border-radius: 3px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.admin-ficha-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(92, 61, 46, 0.3);
+    cursor: pointer;
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: background 0.15s;
+}
+
+.admin-ficha-header:hover {
+    background: rgba(92, 61, 46, 0.5);
+}
+
+.admin-ficha-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-ficha-nome {
+    font-family: 'Rye', serif;
+    font-size: 1rem;
+    color: var(--bege);
+}
+
+.admin-ficha-email {
+    font-size: 0.78rem;
+}
+
+.admin-ficha-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-ficha-toggle {
+    color: var(--bege-escuro);
+    font-size: 0.85rem;
+    transition: transform 0.15s;
+}
+
+.admin-ficha-detalhe {
+    padding: 16px 18px;
+    background: rgba(26, 20, 16, 0.6);
+    border-top: 1px solid var(--marrom);
+}
+
+.admin-ficha-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.admin-ficha-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--marrom-claro);
+}
