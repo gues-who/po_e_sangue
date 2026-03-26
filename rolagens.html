@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pó e Sangue — Rolagens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="site-nav" aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="ficha.html">Ficha</a>
+        <a href="rolagens.html" class="nav-current" aria-current="page">Rolagens</a>
+        <a href="habilidades.html">Habilidades</a>
+        <a href="livro-jogador.html">Livro do jogador</a>
+    </nav>
+
+    <header class="page-header">
+        <h1>Sala de rolagem</h1>
+        <p class="quote">2d6 + atributo · 10+ Sangue Frio · 7–9 Preço de Sangue · 6− O Deserto Ri</p>
+    </header>
+
+    <div class="section rolagem-valores book-page">
+        <h2>Valores para a rolagem</h2>
+        <p class="note">Preencha aqui ou use os dados salvos na <a href="ficha.html">ficha</a> (mesmo navegador).</p>
+        <div class="attributes-grid">
+            <div>
+                <label for="carne">Carne:</label>
+                <input type="number" id="carne" value="0" min="-2" max="3">
+            </div>
+            <div>
+                <label for="polvora">Pólvora:</label>
+                <input type="number" id="polvora" value="0" min="-2" max="3">
+            </div>
+            <div>
+                <label for="deserto">Deserto:</label>
+                <input type="number" id="deserto" value="0" min="-2" max="3">
+            </div>
+            <div>
+                <label for="alma">Alma:</label>
+                <input type="number" id="alma" value="0" min="-2" max="3">
+            </div>
+        </div>
+        <label for="sombra">Sombra (0–6):</label>
+        <input type="number" id="sombra" min="0" max="6" value="0">
+
+        <label for="arquetipo">Arquétipo:</label>
+        <select id="arquetipo">
+            <option value="O Ex-Soldado">O Ex-Soldado</option>
+            <option value="O Garoto">O Garoto</option>
+            <option value="O Rastreador">O Rastreador</option>
+            <option value="O Falso Profeta">O Falso Profeta</option>
+            <option value="Outro">Outro</option>
+        </select>
+
+        <label><input type="checkbox" id="ferimento1"> 1º ferimento (desvantagem física: 3d6, descarta o maior em Carne/Pólvora)</label>
+    </div>
+
+    <div class="section book-page">
+        <h2>Contexto da cena</h2>
+        <div class="dice-contexto" style="border:none;padding:0;background:transparent;">
+            <label><input type="checkbox" id="ctxCombate"> Combate (Ex-Soldado: Instinto de Trincheira)</label>
+            <label><input type="checkbox" id="ctxIsolado"> Isolado ou último de pé (Garoto)</label>
+            <label><input type="checkbox" id="ctxRastreamento"> Rastreamento / recursos vitais (Rastreador + Deserto)</label>
+            <label><input type="checkbox" id="ctxIntimidacao"> Intimidação com Alma (Falso Profeta)</label>
+            <label><input type="checkbox" id="ctxUsarSombra"> Usar Sombra no lugar do atributo</label>
+        </div>
+
+        <p class="dice-hint">Escolha o atributo abaixo. O efeito visual é atmosférico; o total segue as regras.</p>
+
+        <div class="dice-buttons">
+            <button type="button" class="btn-carne" data-dice="carne">Carne</button>
+            <button type="button" class="btn-polvora" data-dice="polvora">Pólvora</button>
+            <button type="button" class="btn-alma" data-dice="alma">Alma</button>
+            <button type="button" class="btn-deserto" data-dice="deserto">Deserto</button>
+        </div>
+
+        <div class="dice-tier-badge" id="diceTierBadge"></div>
+        <div class="dice-label" id="diceLabelText">Escolha um atributo acima</div>
+        <div class="dice-stage-wrap" id="diceStageWrap">
+            <div class="dice-stage" id="diceStage">
+                <div class="dice-result" id="diceResult" aria-live="polite">
+                    <span class="dice-result-inner" id="diceResultInner">—</span>
+                </div>
+            </div>
+        </div>
+        <div class="dice-detail" id="diceDetail"></div>
+        <div class="dice-intervencoes" id="diceIntervencoes"></div>
+    </div>
+
+    <script src="logic.js"></script>
+    <script src="rolagens.js"></script>
+</body>
+</html>

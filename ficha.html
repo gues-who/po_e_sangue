@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pó e Sangue — Ficha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="site-nav" aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="ficha.html" class="nav-current" aria-current="page">Ficha</a>
+        <a href="rolagens.html">Rolagens</a>
+        <a href="habilidades.html">Habilidades</a>
+        <a href="livro-jogador.html">Livro do jogador</a>
+    </nav>
+
+    <header class="page-header">
+        <h1>Pó e Sangue</h1>
+        <p class="quote">Um RPG nas fronteiras do inferno · inspirado em <em>Meridiano de Sangue</em> (Cormac McCarthy).</p>
+        <p class="quote">A guerra é deus.</p>
+    </header>
+
+    <div class="wanted-wrap">
+        <div class="wanted-poster" aria-label="Cartaz de procurado">
+            <div class="wanted-title">Procurado</div>
+            <div class="wanted-photo-frame" id="wantedPhotoFrame">
+                <div class="wanted-photo-placeholder" id="wantedPlaceholder">
+                    Carregue uma imagem na seção Identidade
+                </div>
+                <img id="wantedImg" alt="" hidden>
+            </div>
+            <div class="wanted-name" id="wantedNameDisplay">— Sem nome —</div>
+            <div class="wanted-reward">
+                Recompensa: <strong id="wantedRewardDisplay">$ 0</strong>
+            </div>
+            <div class="wanted-sub">Vivo ou morto</div>
+            <div class="tumbleweed-deco" aria-hidden="true"></div>
+        </div>
+    </div>
+
+    <form id="fichaForm">
+        <div class="section">
+            <h2>Identidade</h2>
+            <label for="nome">Nome/Alcunha:</label>
+            <input type="text" id="nome" placeholder="Ex: Silas, 'O Manco'">
+
+            <label for="nivel">Nível (recompensa no cartaz):</label>
+            <input type="number" id="nivel" min="0" max="99" value="0">
+
+            <label for="fotoPlayer">Retrato do foragido (imagem):</label>
+            <input type="file" id="fotoPlayer" accept="image/*">
+
+            <label for="arquetipo">Arquétipo:</label>
+            <select id="arquetipo">
+                <option value="O Ex-Soldado">O Ex-Soldado (O Desertor)</option>
+                <option value="O Garoto">O Garoto (O Sobrevivente)</option>
+                <option value="O Rastreador">O Rastreador (O Batedor)</option>
+                <option value="O Falso Profeta">O Falso Profeta (O Pregador Caído)</option>
+                <option value="Outro">Outro (Personalizado)</option>
+            </select>
+
+            <label for="aparencia">Aparência e Cicatrizes:</label>
+            <textarea id="aparencia" placeholder="Descreva fardas rasgadas, cicatrizes, olhar vazio..."></textarea>
+        </div>
+
+        <div class="section">
+            <h2>Atributos</h2>
+            <p class="note">Distribua: +2, +1, +1, 0. Rolagens: 2d6 + atributo (página <a href="rolagens.html">Rolagens</a>).</p>
+            <div class="attributes-grid">
+                <div>
+                    <label for="carne">Carne:</label>
+                    <input type="number" id="carne" value="0" min="-2" max="3">
+                </div>
+                <div>
+                    <label for="polvora">Pólvora:</label>
+                    <input type="number" id="polvora" value="0" min="-2" max="3">
+                </div>
+                <div>
+                    <label for="deserto">Deserto:</label>
+                    <input type="number" id="deserto" value="0" min="-2" max="3">
+                </div>
+                <div>
+                    <label for="alma">Alma:</label>
+                    <input type="number" id="alma" value="0" min="-2" max="3">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Corrupção e Morte</h2>
+
+            <label for="sombra">A Sombra (0 a 6):</label>
+            <p class="note">Atos cruéis ou pactos aumentam a Sombra. Em 6, o personagem vira NPC (Monstro do Juiz).</p>
+            <input type="number" id="sombra" min="0" max="6" value="0">
+
+            <label>Ferimentos:</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="ferimento1"> 1º (Sangrando: desvantagem em rolagens físicas — 3d6, descarta o maior)</label><br>
+                <label><input type="checkbox" id="ferimento2"> 2º (Debilitado)</label><br>
+                <label><input type="checkbox" id="ferimento3"> 3º (Morte)</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Habilidade do Arquétipo</h2>
+            <textarea id="aparencia_hab" placeholder="Instinto de Trincheira, Nascido no Fogo, Olhos de Abutre, Fogo e Enxofre…"></textarea>
+        </div>
+
+        <div class="section">
+            <h2>Inventário e Recursos</h2>
+
+            <label for="arma1">Arma de Fogo Principal:</label>
+            <input type="text" id="arma1" placeholder="Ex: Rifle Springfield 1842">
+
+            <label for="municao">Munição Restante (Balas/Cargas):</label>
+            <input type="number" id="municao" value="0">
+
+            <label for="arma2">Arma Branca / Secundária:</label>
+            <input type="text" id="arma2" placeholder="Ex: Baioneta enferrujada">
+
+            <label for="agua">Água / Cantil:</label>
+            <select id="agua">
+                <option value="Cheio">Cheio</option>
+                <option value="Metade">Metade</option>
+                <option value="Gotas">Apenas Gotas</option>
+                <option value="Vazio">Vazio (Desidratando)</option>
+            </select>
+
+            <label for="provisoes">Provisões e Pertences Diversos:</label>
+            <textarea id="provisoes" placeholder="Fósforos, charque, charutos, tabaco..."></textarea>
+        </div>
+
+        <div class="btn-bar">
+            <a class="link-button" href="rolagens.html">Abrir rolagens</a>
+            <button type="button" onclick="exportarFicha()">Exportar ficha (.txt)</button>
+        </div>
+    </form>
+
+    <script src="ficha.js"></script>
+</body>
+</html>
