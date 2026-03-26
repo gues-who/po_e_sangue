@@ -1,50 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pó e Sangue</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <nav class="site-nav" aria-label="Navegação principal">
-        <a href="index.html" class="nav-current" aria-current="page">Início</a>
-        <a href="ficha.html">Ficha</a>
-        <a href="rolagens.html">Rolagens</a>
-        <a href="habilidades.html">Habilidades</a>
-        <a href="livro-jogador.html">Livro do jogador</a>
-        <a href="login.html" class="nav-auth-link">Entrar</a>
-    </nav>
-
-    <header class="page-header">
-        <h1>Pó e Sangue</h1>
-        <p class="quote">Um RPG nas fronteiras do inferno · inspirado em <em>Meridiano de Sangue</em> (Cormac McCarthy).</p>
-    </header>
-
-    <div class="portal-grid">
-        <a class="portal-card" href="ficha.html">
-            <h2>Ficha</h2>
-            <p>Cartaz de procurado, atributos, Sombra, ferimentos, inventário e exportação em texto.</p>
-        </a>
-        <a class="portal-card" href="rolagens.html">
-            <h2>Rolagens</h2>
-            <p>2d6 + atributo, contexto da cena e efeitos visuais por tipo de dado.</p>
-        </a>
-        <a class="portal-card" href="habilidades.html">
-            <h2>Habilidades</h2>
-            <p>Instinto de Trincheira, Nascido no Fogo, Olhos de Abutre, Fogo e Enxofre.</p>
-        </a>
-        <a class="portal-card" href="livro-jogador.html">
-            <h2>Livro do jogador</h2>
-            <p>Resumo das regras: resultados, atributos, Sombra, ferimentos.</p>
-        </a>
-    </div>
-
-    <p class="note book-page" style="text-align:center;">Envie esta pasta inteira aos jogadores: apenas HTML, CSS e JS — sem instalar nada. Abra <strong>index.html</strong> no navegador.</p>
-
-</body>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
