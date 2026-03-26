@@ -1270,3 +1270,162 @@ button.secondary {
     text-transform: uppercase;
     color: var(--marrom-claro);
 }
+
+/* ── Abas do painel admin ──────────────────────────────────── */
+.admin-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--marrom);
+}
+
+.admin-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 12px 20px;
+    font-family: 'Rye', serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bege-escuro);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    border-radius: 0;
+    transform: none;
+    box-shadow: none;
+    min-width: 0;
+}
+
+.admin-tab:hover {
+    color: var(--bege);
+    transform: none;
+    box-shadow: none;
+}
+
+.admin-tab--active {
+    color: var(--bege);
+    border-bottom-color: var(--vermelho);
+}
+
+/* ── Histórico de rolagens (compartilhado entre rolagens.html e admin.html) */
+.hist-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.hist-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 14px;
+    background: rgba(26, 20, 16, 0.6);
+    border: 1px solid var(--marrom);
+    border-radius: 3px;
+    font-size: 0.82rem;
+    transition: background 0.2s;
+}
+
+.hist-row--new {
+    animation: histFlash 0.55s ease-out;
+}
+
+@keyframes histFlash {
+    0%   { background: rgba(139, 26, 26, 0.3); }
+    100% { background: rgba(26, 20, 16, 0.6);  }
+}
+
+.hist-hora {
+    color: var(--marrom-claro);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    min-width: 62px;
+}
+
+.hist-nome {
+    font-family: 'Rye', serif;
+    font-size: 0.85rem;
+    color: var(--bege);
+    white-space: nowrap;
+}
+
+.hist-email {
+    font-size: 0.72rem;
+    color: var(--marrom-claro);
+}
+
+.hist-attr {
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.hist-attr--carne   { background: rgba(139, 26, 26, 0.35); color: #e88; }
+.hist-attr--polvora { background: rgba(92, 61, 46, 0.55);  color: var(--bege-escuro); }
+.hist-attr--alma    { background: rgba(180, 150, 50, 0.25); color: #d4a; }
+.hist-attr--deserto { background: rgba(120, 100, 60, 0.35); color: #ca8; }
+
+.hist-dados {
+    color: var(--bege-escuro);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.hist-total {
+    font-family: 'Rye', serif;
+    font-size: 1.1rem;
+    color: var(--bege);
+    white-space: nowrap;
+}
+
+.hist-tier {
+    padding: 2px 10px;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.hist-tier--sucesso {
+    background: rgba(40, 100, 50, 0.4);
+    color: #7dbf80;
+    border: 1px solid rgba(60, 140, 70, 0.4);
+}
+
+.hist-tier--preco {
+    background: rgba(139, 100, 26, 0.35);
+    color: #c8973a;
+    border: 1px solid rgba(180, 130, 40, 0.4);
+}
+
+.hist-tier--falha {
+    background: rgba(100, 20, 20, 0.4);
+    color: #c06060;
+    border: 1px solid rgba(139, 26, 26, 0.45);
+}
+
+.hist-intervencao {
+    font-size: 0.72rem;
+    color: #c8973a;
+    padding: 2px 8px;
+    border: 1px dashed rgba(180, 130, 40, 0.4);
+    border-radius: 2px;
+}
+
+.hist-cloud-badge {
+    font-size: 0.78rem;
+    color: #7dbf80;
+    padding: 4px 10px;
+    border: 1px solid rgba(60, 140, 70, 0.35);
+    border-radius: 2px;
+    background: rgba(40, 100, 50, 0.2);
+}

@@ -93,6 +93,19 @@
         <div class="dice-intervencoes" id="diceIntervencoes"></div>
     </div>
 
+    <!-- Histórico da sessão -->
+    <div class="section book-page" id="historicoSection" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+            <h2 style="margin:0;border:none;padding:0;">Histórico da sessão</h2>
+            <span id="historicoCloudBadge" class="hist-cloud-badge" hidden>☁ salvo na nuvem</span>
+        </div>
+        <div id="historicoLista" class="hist-lista"></div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="logic.js"></script>
     <script src="rolagens.js"></script>
 </body>

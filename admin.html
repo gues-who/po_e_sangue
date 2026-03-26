@@ -44,7 +44,16 @@
             <button class="secondary" onclick="fazerLogout()" style="min-width:auto;padding:10px 18px;flex:none;">Sair</button>
         </div>
 
-        <div class="section">
+        <!-- Abas de navegação do painel -->
+        <div class="admin-tabs">
+            <button class="admin-tab admin-tab--active" id="abaFichas"
+                    onclick="mostrarAba('fichas')">Fichas</button>
+            <button class="admin-tab" id="abaRolagens"
+                    onclick="mostrarAba('rolagens')">Histórico de Rolagens</button>
+        </div>
+
+        <!-- Fichas -->
+        <div class="section" id="secaoFichas">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
                 <h2 style="margin:0;border:none;padding:0;">Fichas dos Jogadores</h2>
                 <button onclick="recarregarFichas()" class="secondary"
@@ -52,6 +61,23 @@
             </div>
             <p id="adminStatus" class="note"></p>
             <div id="fichasLista"></div>
+        </div>
+
+        <!-- Histórico de Rolagens -->
+        <div class="section" id="secaoRolagens" hidden>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                <h2 style="margin:0;border:none;padding:0;">Histórico de Rolagens</h2>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <select id="filtroJogador" onchange="filtrarRolagens()"
+                            style="padding:8px 12px;font-size:0.82rem;min-width:160px;">
+                        <option value="">Todos os jogadores</option>
+                    </select>
+                    <button onclick="recarregarRolagens()" class="secondary"
+                            style="min-width:auto;padding:10px 18px;flex:none;">↺ Atualizar</button>
+                </div>
+            </div>
+            <p id="rolagensStatus" class="note"></p>
+            <div id="rolagensLista" class="hist-lista"></div>
         </div>
     </div>
 

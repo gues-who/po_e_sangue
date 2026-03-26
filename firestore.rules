@@ -9,14 +9,32 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ── Fichas dos jogadores ──────────────────────────────
     match /fichas/{userId} {
       // Cada jogador lê e grava apenas a própria ficha
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
 
-      // O mestre (admin) pode ler todas as fichas
+      // O mestre pode ler todas as fichas
       allow read: if request.auth != null
                   && request.auth.token.email == "mestre@seudominio.com";
+    }
+
+    // ── Histórico de rolagens ─────────────────────────────
+    match /rolagens/{docId} {
+      // Jogadores só podem criar rolagens identificadas com seu próprio uid
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+
+      // Jogadores leem apenas as próprias rolagens;
+      // o mestre lê todas
+      allow read: if request.auth != null
+                  && (resource.data.uid == request.auth.uid
+                      || request.auth.token.email == "mestre@seudominio.com");
+
+      // Ninguém pode editar ou apagar rolagens registradas
+      allow update, delete: if false;
     }
   }
 }
