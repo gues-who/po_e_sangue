@@ -9,7 +9,7 @@ import {
 const easeOutCubic = t => 1 - Math.pow(1 - t, 3)
 const easeOutQuad  = t => 1 - (1 - t) * (1 - t)
 
-import coltImg from '/colt.png'
+import coltImg from '../assets/colt.png'
 
 /* ── DiceStage ───────────────────────────────────────────── */
 const DiceStage = forwardRef(function DiceStage({ onSombraChange }, ref) {
