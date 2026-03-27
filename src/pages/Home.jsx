@@ -1,6 +1,33 @@
 import { Link } from 'react-router-dom'
 import Nav from '../components/Nav'
 
+const cards = [
+  {
+    to: '/ficha',
+    title: 'Ficha',
+    desc: 'Cartaz de procurado, atributos, Sombra, ferimentos, inventário e exportação em texto.',
+    icon: '📜',
+  },
+  {
+    to: '/rolagens',
+    title: 'Rolagens',
+    desc: '2d6 + atributo, contexto da cena e efeitos visuais por tipo de dado.',
+    icon: '🎲',
+  },
+  {
+    to: '/habilidades',
+    title: 'Habilidades',
+    desc: 'Instinto de Trincheira, Nascido no Fogo, Olhos de Abutre, Fogo e Enxofre.',
+    icon: '⚔️',
+  },
+  {
+    to: '/livro-jogador',
+    title: 'Livro do jogador',
+    desc: 'Resumo das regras: resultados, atributos, Sombra, ferimentos.',
+    icon: '📖',
+  },
+]
+
 export default function Home() {
   return (
     <>
@@ -14,22 +41,13 @@ export default function Home() {
       </header>
 
       <div className="portal-grid">
-        <Link className="portal-card" to="/ficha">
-          <h2>Ficha</h2>
-          <p>Cartaz de procurado, atributos, Sombra, ferimentos, inventário e exportação em texto.</p>
-        </Link>
-        <Link className="portal-card" to="/rolagens">
-          <h2>Rolagens</h2>
-          <p>2d6 + atributo, contexto da cena e efeitos visuais por tipo de dado.</p>
-        </Link>
-        <Link className="portal-card" to="/habilidades">
-          <h2>Habilidades</h2>
-          <p>Instinto de Trincheira, Nascido no Fogo, Olhos de Abutre, Fogo e Enxofre.</p>
-        </Link>
-        <Link className="portal-card" to="/livro-jogador">
-          <h2>Livro do jogador</h2>
-          <p>Resumo das regras: resultados, atributos, Sombra, ferimentos.</p>
-        </Link>
+        {cards.map(({ to, title, desc, icon }) => (
+          <Link key={to} className="portal-card group" to={to}>
+            <span className="text-3xl mb-3 block">{icon}</span>
+            <h2 className="mb-2">{title}</h2>
+            <p className="text-sm leading-relaxed opacity-80">{desc}</p>
+          </Link>
+        ))}
       </div>
     </>
   )

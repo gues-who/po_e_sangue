@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
     --bege: #e8dcc8;
     --bege-escuro: #c4b49a;

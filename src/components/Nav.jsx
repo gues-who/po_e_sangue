@@ -25,14 +25,16 @@ export default function Nav() {
       <NavLink to="/habilidades"   className={cls}>Habilidades</NavLink>
       <NavLink to="/livro-jogador" className={cls}>Livro do jogador</NavLink>
       {isAdmin && (
-        <NavLink to="/admin" className={({ isActive }) => 'nav-auth-link' + (isActive ? ' nav-current' : '')}>
+        <NavLink to="/admin" className={({ isActive }) =>
+          'nav-auth-link' + (isActive ? ' nav-current' : '')}>
           Mestre
         </NavLink>
       )}
       {user ? (
         <a href="#sair" className="nav-auth-link" onClick={handleLogout}>Sair</a>
       ) : (
-        <NavLink to="/login" className={({ isActive }) => 'nav-auth-link' + (isActive ? ' nav-current' : '')}>
+        <NavLink to="/login" className={({ isActive }) =>
+          'nav-auth-link' + (isActive ? ' nav-current' : '')}>
           Entrar
         </NavLink>
       )}
