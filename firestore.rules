@@ -1,8 +1,9 @@
 // Cole estas regras em:
 // Firebase Console → Firestore Database → Regras
 //
-// ATENÇÃO: substitua "mestre@seudominio.com" pelo mesmo e-mail
-// definido em ADMIN_EMAIL dentro de firebase-config.js
+// ATENÇÃO: substitua "mestre@seudominio.com" pelo e-mail do mestre,
+// o mesmo valor definido em VITE_ADMIN_EMAIL no arquivo .env.local
+// e nos Secrets do GitHub Actions.
 //
 // Depois clique em "Publicar".
 
@@ -18,7 +19,7 @@ service cloud.firestore {
 
       // O mestre pode ler todas as fichas
       allow read: if request.auth != null
-                  && request.auth.token.email == "mestre@seudominio.com";
+                  && request.auth.token.email == "jhophjm@gmail.com";
     }
 
     // ── Histórico de rolagens ─────────────────────────────
@@ -31,7 +32,7 @@ service cloud.firestore {
       // o mestre lê todas
       allow read: if request.auth != null
                   && (resource.data.uid == request.auth.uid
-                      || request.auth.token.email == "mestre@seudominio.com");
+                      || request.auth.token.email == "jhophjm@gmail.com");
 
       // Ninguém pode editar ou apagar rolagens registradas
       allow update, delete: if false;
