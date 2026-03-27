@@ -131,25 +131,21 @@ export default function Ficha() {
     <>
       <Nav />
 
-      {/* Cloud banner / panel */}
-      {!user && isFirebaseConfigured && (
-        <div className="cloud-banner">
-          <span>💾 Salve sua ficha na nuvem e acesse de qualquer dispositivo.</span>
-          <a href="#/login" className="cloud-banner-btn">Entrar / Cadastrar</a>
+      {/* Painel de nuvem — sempre visível (rota protegida) */}
+      <div className="cloud-panel">
+        <div className="cloud-panel-user">
+          <span className="cloud-panel-email">{user?.email}</span>
         </div>
-      )}
-      {user && (
-        <div className="cloud-panel">
-          <div className="cloud-panel-user">
-            <span className="cloud-panel-email">{user.email}</span>
-          </div>
-          <div className="cloud-panel-actions">
-            <span className="cloud-status">{cloudStatus}</span>
-            <button type="button" className="cloud-btn" onClick={salvarNaNuvem}>Salvar na nuvem</button>
-            <button type="button" className="cloud-btn cloud-btn--sec" onClick={carregarDaNuvem}>Carregar da nuvem</button>
-          </div>
+        <div className="cloud-panel-actions">
+          <span className="cloud-status">{cloudStatus}</span>
+          <button type="button" className="cloud-btn" onClick={salvarNaNuvem}>
+            Salvar na nuvem
+          </button>
+          <button type="button" className="cloud-btn cloud-btn--sec" onClick={carregarDaNuvem}>
+            Carregar da nuvem
+          </button>
         </div>
-      )}
+      </div>
 
       <header className="page-header">
         <h1>Pó e Sangue</h1>

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendPasswordResetEmail, signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from 'firebase/auth'
-import { auth, isFirebaseConfigured, ADMIN_EMAIL } from '../firebase'
-import { useAuth } from '../contexts/AuthContext'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { auth, getDb, isFirebaseConfigured } from '../firebase'
 import Nav from '../components/Nav'
 
 const ERROS = {
@@ -17,6 +18,14 @@ const ERROS = {
   'auth/too-many-requests':    'Muitas tentativas. Tente mais tarde.',
   'auth/invalid-credential':   'E-mail ou senha incorretos.',
 }
+
+const ARQUETIPOS = [
+  'O Ex-Soldado (O Desertor)',
+  'O Garoto (O Sobrevivente)',
+  'O Rastreador (O Batedor)',
+  'O Falso Profeta (O Pregador Caído)',
+  'Outro (Personalizado)',
+]
 
 function Alert({ text, isError }) {
   if (!text) return null
@@ -31,12 +40,110 @@ function Alert({ text, isError }) {
   )
 }
 
+/* ── Passo 2: criar personagem logo após o cadastro ──────── */
+function CriarPersonagem({ user, onConcluir }) {
+  const [nome,      setNome]      = useState('')
+  const [arquetipo, setArquetipo] = useState(ARQUETIPOS[0])
+  const [salvando,  setSalvando]  = useState(false)
+  const [erro,      setErro]      = useState('')
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!nome.trim()) { setErro('Digite um nome para o personagem.'); return }
+    setSalvando(true)
+    try {
+      // Salva a ficha inicial no Firestore já associada ao UID/email
+      const db = await getDb()
+      if (db) {
+        await setDoc(doc(db, 'fichas', user.uid), {
+          nome:      nome.trim(),
+          arquetipo: arquetipo,
+          email:     user.email,
+          nivel:     '0',
+          carne: '0', polvora: '0', deserto: '0', alma: '0', sombra: '0',
+          ferimento1: false, ferimento2: false, ferimento3: false,
+          aparencia: '', aparencia_hab: '', arma1: '', municao: '0',
+          arma2: '', agua: 'Cheio', provisoes: '',
+          updatedAt: serverTimestamp(),
+          criadoEm:  serverTimestamp(),
+        })
+      }
+      // Salva no localStorage também
+      const dados = { nome: nome.trim(), arquetipo }
+      localStorage.setItem('poesangue_ficha_v1', JSON.stringify(dados))
+      onConcluir()
+    } catch (e) {
+      setErro('Erro ao salvar: ' + e.message)
+      setSalvando(false)
+    }
+  }
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card section">
+        <div className="flex flex-col items-center gap-2 mb-6 text-center">
+          <div className="text-4xl">🤠</div>
+          <h2 className="mb-0">Crie seu personagem</h2>
+          <p className="text-sm opacity-70">
+            Conta criada! Agora dê um nome ao seu foragido.
+          </p>
+        </div>
+
+        {erro && <Alert text={erro} isError />}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="nomePersonagem" className="text-sm font-medium">
+              Nome / Alcunha do personagem
+            </label>
+            <input
+              type="text"
+              id="nomePersonagem"
+              value={nome}
+              onChange={e => setNome(e.target.value)}
+              placeholder="Ex: Silas, 'O Manco'"
+              autoFocus
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="arquetipoSelect" className="text-sm font-medium">
+              Arquétipo
+            </label>
+            <select
+              id="arquetipoSelect"
+              value={arquetipo}
+              onChange={e => setArquetipo(e.target.value)}
+            >
+              {ARQUETIPOS.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+
+          <div className="section" style={{padding:'14px 18px',marginTop:0}}>
+            <p className="note text-xs leading-relaxed">
+              <strong>Conta associada:</strong> {user.email}<br />
+              Sua ficha ficará salva na nuvem e poderá ser acessada de qualquer dispositivo.
+            </p>
+          </div>
+
+          <button type="submit" disabled={salvando} className="w-full mt-2">
+            {salvando ? 'Criando personagem…' : 'Criar personagem e entrar →'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+/* ── Página de Login principal ───────────────────────────── */
 export default function Login() {
-  const [tab, setTab]         = useState('entrar')
-  const [msg, setMsg]         = useState({ text: '', isError: false })
+  const [tab,     setTab]     = useState('entrar')
+  const [msg,     setMsg]     = useState({ text: '', isError: false })
   const [loading, setLoading] = useState(false)
+  // Guarda o usuário recém-criado para exibir o passo 2
+  const [novaConta, setNovaConta] = useState(null)
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   function showMsg(text, isError = true) { setMsg({ text, isError }) }
   function clearMsg() { setMsg({ text: '', isError: false }) }
@@ -47,8 +154,7 @@ export default function Login() {
     setLoading(true); clearMsg()
     try {
       await signInWithEmailAndPassword(auth, e.target.loginEmail.value.trim(), e.target.loginSenha.value)
-      showMsg('Login realizado! Redirecionando…', false)
-      setTimeout(() => navigate('/ficha'), 700)
+      navigate('/ficha', { replace: true })
     } catch (err) {
       showMsg(ERROS[err.code] || 'Erro: ' + err.code)
     } finally { setLoading(false) }
@@ -57,14 +163,16 @@ export default function Login() {
   async function handleCadastrar(e) {
     e.preventDefault()
     if (!isFirebaseConfigured) { showMsg('Firebase não configurado.'); return }
+    const email  = e.target.cadEmail.value.trim()
     const senha  = e.target.cadSenha.value
     const senha2 = e.target.cadSenha2.value
     if (senha !== senha2) { showMsg('As senhas não coincidem.'); return }
+    if (senha.length < 6) { showMsg('Mínimo 6 caracteres na senha.'); return }
     setLoading(true); clearMsg()
     try {
-      await createUserWithEmailAndPassword(auth, e.target.cadEmail.value.trim(), senha)
-      showMsg('Conta criada! Redirecionando…', false)
-      setTimeout(() => navigate('/ficha'), 700)
+      const cred = await createUserWithEmailAndPassword(auth, email, senha)
+      // Vai para o passo 2: criação do personagem
+      setNovaConta(cred.user)
     } catch (err) {
       showMsg(ERROS[err.code] || 'Erro: ' + err.code)
     } finally { setLoading(false) }
@@ -74,8 +182,27 @@ export default function Login() {
     e.preventDefault()
     const email = document.getElementById('loginEmail')?.value?.trim()
     if (!email) { showMsg('Digite o e-mail no campo acima.'); return }
-    try { await sendPasswordResetEmail(auth, email); showMsg('E-mail de redefinição enviado!', false) }
-    catch (err) { showMsg(ERROS[err.code] || err.code) }
+    try {
+      await sendPasswordResetEmail(auth, email)
+      showMsg('E-mail de redefinição enviado!', false)
+    } catch (err) { showMsg(ERROS[err.code] || err.code) }
+  }
+
+  // Passo 2 — criação do personagem logo após o cadastro
+  if (novaConta) {
+    return (
+      <>
+        <Nav />
+        <header className="page-header">
+          <h1>Pó e Sangue</h1>
+          <p className="quote">Bem-vindo ao deserto.</p>
+        </header>
+        <CriarPersonagem
+          user={novaConta}
+          onConcluir={() => navigate('/ficha', { replace: true })}
+        />
+      </>
+    )
   }
 
   return (
@@ -83,103 +210,102 @@ export default function Login() {
       <Nav />
       <header className="page-header">
         <h1>Pó e Sangue</h1>
-        <p className="quote">Acesse ou cadastre sua conta para salvar sua ficha.</p>
+        <p className="quote">
+          Velho Oeste, 1850. Sobrevivência, terror e violência.
+        </p>
       </header>
 
       <div className="auth-wrap">
-        {/* ── Logado ── */}
-        {user ? (
-          <div className="auth-card section">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-14 h-14 rounded-full bg-ps-vermelho/20 border border-ps-vermelho
-                              flex items-center justify-center text-2xl">
-                ☽
+        <div className="auth-card section">
+
+          {/* Tabs */}
+          <div className="auth-tabs">
+            {[['entrar','Entrar'],['cadastrar','Cadastrar']].map(([id, label]) => (
+              <button key={id}
+                className={`auth-tab${tab === id ? ' auth-tab--active' : ''}`}
+                onClick={() => { setTab(id); clearMsg() }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {!isFirebaseConfigured && (
+            <Alert text="Firebase não configurado. Crie .env.local com base em .env.example." isError />
+          )}
+          <Alert {...msg} />
+
+          {/* ── Entrar ── */}
+          {tab === 'entrar' && (
+            <form onSubmit={handleEntrar} noValidate className="flex flex-col gap-3">
+              <h2>Entrar na sua conta</h2>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="loginEmail" className="text-sm">E-mail</label>
+                <input type="email" id="loginEmail" name="loginEmail"
+                  placeholder="seu@email.com" required autoComplete="email" />
               </div>
-              <h2 className="mb-0">Você já está logado</h2>
-              <p className="opacity-75 text-sm">Logado como: <strong>{user.email}</strong></p>
-            </div>
-            <div className="btn-bar mt-5">
-              <Link to="/ficha" className="link-button">Ir para a Ficha</Link>
-              <button className="secondary" onClick={() => signOut(auth)}>Sair da conta</button>
-            </div>
-            {user.email === ADMIN_EMAIL && (
-              <p className="mt-4 text-center">
-                <Link to="/admin" className="text-ps-vermelho font-rye tracking-wide hover:underline">
-                  ☽ Painel do Mestre
-                </Link>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="loginSenha" className="text-sm">Senha</label>
+                <input type="password" id="loginSenha" name="loginSenha"
+                  placeholder="••••••" required autoComplete="current-password" />
+              </div>
+
+              <button type="submit" disabled={loading} className="mt-2 w-full">
+                {loading ? 'Entrando…' : 'Entrar →'}
+              </button>
+
+              <p className="note text-center text-xs mt-1">
+                Esqueceu a senha?{' '}
+                <a href="#redefinir" onClick={handleReset}
+                  className="underline opacity-80 hover:opacity-100">
+                  Redefinir por e-mail
+                </a>
               </p>
-            )}
-          </div>
-        ) : (
-          /* ── Não logado ── */
-          <div className="auth-card section">
-            {/* Tabs */}
-            <div className="auth-tabs">
-              {['entrar','cadastrar'].map(t => (
-                <button key={t}
-                  className={`auth-tab${tab === t ? ' auth-tab--active' : ''}`}
-                  onClick={() => { setTab(t); clearMsg() }}>
-                  {t === 'entrar' ? 'Entrar' : 'Cadastrar'}
-                </button>
-              ))}
-            </div>
+            </form>
+          )}
 
-            {!isFirebaseConfigured && (
-              <Alert text="Firebase não configurado. Crie .env.local com base em .env.example." isError />
-            )}
-            <Alert {...msg} />
+          {/* ── Cadastrar ── */}
+          {tab === 'cadastrar' && (
+            <form onSubmit={handleCadastrar} noValidate className="flex flex-col gap-3">
+              <h2>Criar conta de jogador</h2>
+              <p className="note text-xs">
+                Após criar a conta, você nomeará seu personagem e sua ficha ficará
+                salva na nuvem associada a este e-mail.
+              </p>
 
-            {tab === 'entrar' ? (
-              <form onSubmit={handleEntrar} noValidate className="flex flex-col gap-3">
-                <h2>Entrar na conta</h2>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="loginEmail" className="text-sm">E-mail</label>
-                  <input type="email" id="loginEmail" name="loginEmail"
-                    placeholder="seu@email.com" required autoComplete="email" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="loginSenha" className="text-sm">Senha</label>
-                  <input type="password" id="loginSenha" name="loginSenha"
-                    placeholder="••••••" required autoComplete="current-password" />
-                </div>
-                <button type="submit" disabled={loading} className="mt-2 w-full">
-                  {loading ? 'Aguarde…' : 'Entrar'}
-                </button>
-                <p className="note text-center text-xs mt-1">
-                  Esqueceu a senha?{' '}
-                  <a href="#redefinir" onClick={handleReset}
-                    className="underline opacity-80 hover:opacity-100">
-                    Redefinir por e-mail
-                  </a>
-                </p>
-              </form>
-            ) : (
-              <form onSubmit={handleCadastrar} noValidate className="flex flex-col gap-3">
-                <h2>Criar conta</h2>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="cadEmail" className="text-sm">E-mail</label>
-                  <input type="email" id="cadEmail" name="cadEmail"
-                    placeholder="seu@email.com" required autoComplete="email" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="cadSenha" className="text-sm">
-                    Senha <span className="note">(mínimo 6 caracteres)</span>
-                  </label>
-                  <input type="password" id="cadSenha" name="cadSenha"
-                    placeholder="••••••" required autoComplete="new-password" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="cadSenha2" className="text-sm">Confirmar senha</label>
-                  <input type="password" id="cadSenha2" name="cadSenha2"
-                    placeholder="••••••" required autoComplete="new-password" />
-                </div>
-                <button type="submit" disabled={loading} className="mt-2 w-full">
-                  {loading ? 'Aguarde…' : 'Criar conta'}
-                </button>
-              </form>
-            )}
-          </div>
-        )}
+              <div className="flex flex-col gap-1">
+                <label htmlFor="cadEmail" className="text-sm">E-mail</label>
+                <input type="email" id="cadEmail" name="cadEmail"
+                  placeholder="seu@email.com" required autoComplete="email" />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="cadSenha" className="text-sm">
+                  Senha <span className="note">(mínimo 6 caracteres)</span>
+                </label>
+                <input type="password" id="cadSenha" name="cadSenha"
+                  placeholder="••••••" required autoComplete="new-password" />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="cadSenha2" className="text-sm">Confirmar senha</label>
+                <input type="password" id="cadSenha2" name="cadSenha2"
+                  placeholder="••••••" required autoComplete="new-password" />
+              </div>
+
+              <button type="submit" disabled={loading} className="mt-2 w-full">
+                {loading ? 'Criando conta…' : 'Criar conta →'}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Links de referência para quem ainda não tem conta */}
+        <div className="flex gap-4 justify-center mt-4 text-xs opacity-60 flex-wrap">
+          <Link to="/habilidades">Habilidades de arquétipo</Link>
+          <Link to="/livro-jogador">Livro do jogador</Link>
+        </div>
       </div>
     </>
   )
