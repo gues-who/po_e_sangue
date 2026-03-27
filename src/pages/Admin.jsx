@@ -51,61 +51,136 @@ function TierBadge({ tierId, label }) {
   )
 }
 
+/* ── Barra de atributo ──────────────────────────────────── */
+function AttrBar({ label, valor, color }) {
+  const v   = parseInt(valor ?? 0, 10)
+  const max = 3
+  // Converte -2..+3 para 0..100% na barra
+  const pct = Math.max(0, Math.min(100, ((v + 2) / (max + 2)) * 100))
+  const sinal = v > 0 ? '+' + v : String(v)
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-between items-center">
+        <span className="admin-label text-xs">{label}</span>
+        <span className="font-bold text-sm" style={{ color }}>{sinal}</span>
+      </div>
+      <div className="w-full h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="h-2 rounded-full transition-all"
+          style={{ width: pct + '%', background: color, opacity: 0.85 }} />
+      </div>
+    </div>
+  )
+}
+
+/* ── Indicador de sombra ────────────────────────────────── */
+function SombraMeter({ valor }) {
+  const v = parseInt(valor ?? 0, 10)
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-between items-center">
+        <span className="admin-label text-xs">Sombra</span>
+        <span className="font-bold text-sm" style={{ color: '#8b1a1a' }}>{v}/6</span>
+      </div>
+      <div className="flex gap-1">
+        {[1,2,3,4,5,6].map(i => (
+          <div key={i} className="flex-1 h-2 rounded-sm"
+            style={{ background: i <= v ? '#8b1a1a' : 'rgba(255,255,255,0.08)' }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ── Card de ficha ──────────────────────────────────────── */
 function FichaCard({ uid, data }) {
   const [aberto, setAberto] = useState(false)
 
-  const campos = [
-    ['Arquétipo', data.arquetipo], ['Nível', data.nivel],
-    ['Carne', data.carne],        ['Pólvora', data.polvora],
-    ['Deserto', data.deserto],    ['Alma', data.alma],
-    ['Sombra', `${data.sombra ?? '—'}/6`],
-    ['Ferimentos', [data.ferimento1&&'1º',data.ferimento2&&'2º',data.ferimento3&&'3º']
-      .filter(Boolean).join(', ') || 'Nenhum'],
-    ['Arma', data.arma1],         ['Munição', data.municao],
-    ['Arma 2', data.arma2],       ['Água', data.agua],
-  ]
+  const ferimentos = [
+    data.ferimento1 && '🩸 Sangrando',
+    data.ferimento2 && '⚠ Debilitado',
+    data.ferimento3 && '💀 Morte',
+  ].filter(Boolean)
 
   return (
     <div className="admin-ficha-card">
-      <button
-        type="button"
-        className="admin-ficha-header w-full text-left"
-        onClick={() => setAberto(v => !v)}
-      >
+      {/* ── Cabeçalho sempre visível ── */}
+      <div className="admin-ficha-header" style={{ cursor: 'default' }}>
         <div className="admin-ficha-header-info">
           <span className="admin-ficha-nome">{data.nome || '(sem nome)'}</span>
           <span className="admin-ficha-email note">{data.email || uid}</span>
         </div>
-        <div className="admin-ficha-header-meta">
-          <span className="note text-xs">Sombra: {data.sombra ?? '—'}/6</span>
-          <span className="admin-ficha-toggle">{aberto ? '▲' : '▼'}</span>
+        <div className="flex items-center gap-3">
+          <span className="note text-xs opacity-60">{data.arquetipo || '—'}</span>
+          <button
+            type="button"
+            className="admin-ficha-toggle secondary"
+            style={{ minWidth: 'auto', padding: '6px 12px', fontSize: '0.75rem' }}
+            onClick={() => setAberto(v => !v)}
+          >
+            {aberto ? '▲ Fechar' : '▼ Detalhes'}
+          </button>
         </div>
-      </button>
+      </div>
 
+      {/* ── Atributos — sempre visíveis ── */}
+      <div className="admin-ficha-detalhe" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-3">
+          <AttrBar label="Carne"   valor={data.carne}   color="#c0392b" />
+          <AttrBar label="Pólvora" valor={data.polvora} color="#e67e22" />
+          <AttrBar label="Deserto" valor={data.deserto} color="#c4a265" />
+          <AttrBar label="Alma"    valor={data.alma}    color="#8e44ad" />
+        </div>
+        <SombraMeter valor={data.sombra} />
+
+        {ferimentos.length > 0 && (
+          <div className="flex gap-2 flex-wrap mt-3">
+            {ferimentos.map(f => (
+              <span key={f} className="text-xs px-2 py-1 rounded"
+                style={{ background: 'rgba(139,26,26,0.3)', border: '1px solid #8b1a1a' }}>
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Detalhes expandíveis ── */}
       {aberto && (
-        <div className="admin-ficha-detalhe">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-            {campos.map(([label, val]) => (
-              <div key={label} className="flex flex-col">
+        <div className="admin-ficha-detalhe" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm mb-4">
+            {[
+              ['Nível / Recompensa', data.nivel],
+              ['Arma principal', data.arma1],
+              ['Munição', data.municao],
+              ['Arma secundária', data.arma2],
+              ['Água / Cantil', data.agua],
+            ].map(([label, val]) => (
+              <div key={label} className="flex flex-col gap-0.5">
                 <span className="admin-label">{label}</span>
-                <span>{val ?? '—'}</span>
+                <span className="text-sm">{val || '—'}</span>
               </div>
             ))}
           </div>
+
           {data.aparencia && (
-            <div className="mt-3">
-              <span className="admin-label">Aparência</span>
+            <div className="mb-3">
+              <span className="admin-label">Aparência e cicatrizes</span>
               <p className="note mt-1 text-xs leading-relaxed">{data.aparencia}</p>
             </div>
           )}
           {data.aparencia_hab && (
-            <div className="mt-3">
-              <span className="admin-label">Habilidade</span>
+            <div className="mb-3">
+              <span className="admin-label">Habilidade do arquétipo</span>
               <p className="note mt-1 text-xs leading-relaxed">{data.aparencia_hab}</p>
             </div>
           )}
-          <p className="note text-xs mt-4 pt-3 border-t border-ps-marrom/40">
+          {data.provisoes && (
+            <div className="mb-3">
+              <span className="admin-label">Provisões e pertences</span>
+              <p className="note mt-1 text-xs leading-relaxed">{data.provisoes}</p>
+            </div>
+          )}
+          <p className="note text-xs mt-2 pt-3 border-t border-ps-marrom/40 opacity-50">
             Última atualização: {formatarData(data.updatedAt)}
           </p>
         </div>
