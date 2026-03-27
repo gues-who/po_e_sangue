@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db, isFirebaseConfigured } from '../firebase'
+import { getDb, isFirebaseConfigured } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import Nav from '../components/Nav'
 import DiceStage from '../components/DiceStage'
@@ -73,6 +73,7 @@ export default function Rolagens() {
   async function salvarRolagemFirestore(res, atributo, personagem) {
     if (!user || !isFirebaseConfigured) return
     try {
+      const db = await getDb()
       await addDoc(collection(db, 'rolagens'), {
         uid: user.uid, email: user.email, personagem,
         atributo, dadosBrutos: res.dadosBrutos, dadosUsados: res.dadosUsados,

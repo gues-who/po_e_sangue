@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
-import { db, isFirebaseConfigured } from '../firebase'
+import { getDb, isFirebaseConfigured } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import Nav from '../components/Nav'
 import WantedPoster from '../components/WantedPoster'
@@ -38,15 +38,15 @@ export default function Ficha() {
   // Carregar do Firestore quando usuário faz login
   useEffect(() => {
     if (!user || !isFirebaseConfigured) return
-    getDoc(doc(db, 'fichas', user.uid))
-      .then(snap => {
-        if (snap.exists()) {
-          const data = snap.data()
-          setFields(prev => ({ ...prev, ...data }))
-          showStatus('✔ Ficha carregada da nuvem.')
-        }
-      })
-      .catch(e => showStatus('Erro ao carregar: ' + e.message))
+    getDb().then(db => {
+      if (!db) return
+      return getDoc(doc(db, 'fichas', user.uid))
+    }).then(snap => {
+      if (snap?.exists()) {
+        setFields(prev => ({ ...prev, ...snap.data() }))
+        showStatus('✔ Ficha carregada da nuvem.')
+      }
+    }).catch(e => showStatus('Erro ao carregar: ' + e.message))
   }, [user])
 
   function showStatus(msg) {
@@ -62,6 +62,7 @@ export default function Ficha() {
   async function salvarNaNuvem() {
     if (!user || !isFirebaseConfigured) return
     try {
+      const db = await getDb()
       await setDoc(doc(db, 'fichas', user.uid), {
         ...fields, email: user.email, updatedAt: serverTimestamp(),
       })
@@ -72,6 +73,7 @@ export default function Ficha() {
   async function carregarDaNuvem() {
     if (!user || !isFirebaseConfigured) return
     if (!confirm('Carregar da nuvem vai sobrescrever os dados locais. Continuar?')) return
+    const db = await getDb()
     const snap = await getDoc(doc(db, 'fichas', user.uid))
     if (snap.exists()) { setFields(prev => ({ ...prev, ...snap.data() })); showStatus('✔ Carregado!') }
   }

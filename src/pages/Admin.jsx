@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
-import { db, isFirebaseConfigured, ADMIN_EMAIL } from '../firebase'
+import { getDb, isFirebaseConfigured, ADMIN_EMAIL } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Link } from 'react-router-dom'
 import Nav from '../components/Nav'
@@ -155,6 +155,7 @@ export default function Admin() {
     if (!isFirebaseConfigured) return
     setFichasStatus('Carregando fichas…')
     try {
+      const db   = await getDb()
       const snap = await getDocs(collection(db, 'fichas'))
       const arr  = snap.docs.map(d => ({ uid: d.id, data: d.data() }))
       setFichas(arr)
@@ -166,6 +167,7 @@ export default function Admin() {
     if (!isFirebaseConfigured) return
     setRolagensStatus('Carregando rolagens…')
     try {
+      const db   = await getDb()
       const q    = query(collection(db, 'rolagens'), orderBy('timestamp', 'desc'), limit(200))
       const snap = await getDocs(q)
       setRolagens(snap.docs.map(d => d.data()))
