@@ -744,10 +744,18 @@ button.secondary {
     position: absolute;
     bottom: 10%;
     left: 50%;
-    width: min(150px, 42vw);
+    width: min(200px, 52vw);
     transform: translateX(-50%);
     transform-origin: 45% 70%;
     will-change: transform;
+}
+
+.colt-photo {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
 }
 
 .fx-gun .colt-svg {

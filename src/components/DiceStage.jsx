@@ -9,35 +9,7 @@ import {
 const easeOutCubic = t => 1 - Math.pow(1 - t, 3)
 const easeOutQuad  = t => 1 - (1 - t) * (1 - t)
 
-/* ── SVG do Colt ─────────────────────────────────────────── */
-function ColtSvg() {
-  const id = useRef('g' + Math.random().toString(36).slice(2, 9)).current
-  return (
-    <div className="colt-wrap" aria-hidden="true">
-      <svg className="colt-svg" viewBox="0 0 160 56" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id={id + 'metal'} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#7a6850"/><stop offset="100%" stopColor="#3a3228"/>
-          </linearGradient>
-          <linearGradient id={id + 'grip'} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6b4a38"/><stop offset="100%" stopColor="#1e120c"/>
-          </linearGradient>
-        </defs>
-        <rect x="0" y="21" width="58" height="11" rx="1.5" fill="#252018"/>
-        <rect x="54" y="19" width="8" height="15" fill="#120c08"/>
-        <ellipse cx="68" cy="25" rx="14" ry="16" fill={`url(#${id}metal)`} stroke="#1a0f08" strokeWidth="1"/>
-        <ellipse cx="68" cy="25" rx="6" ry="7" fill="#0d0a08" opacity="0.5"/>
-        <path d="M56 11 L102 13 L106 20 L60 20 Z" fill="#5c4e42"/>
-        <path d={`M82 16 L82 31 L74 33 L88 46 L110 48 L122 34 L118 12 L96 6 Z`} fill={`url(#${id}metal)`}/>
-        <path d="M90 32 L84 54 L100 58 L112 48 L94 36 Z" fill={`url(#${id}grip)`}/>
-        <path d="M78 36 Q68 38 70 50" stroke="#140c08" fill="none" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M104 8 L112 0 L118 4 L110 18 Z" fill="#4a4034"/>
-        <rect x="52" y="13" width="4" height="8" fill="#0d0a08"/>
-        <circle cx="118" cy="22" r="3" fill="#2a2218"/>
-      </svg>
-    </div>
-  )
-}
+import coltImg from '/colt.png'
 
 /* ── DiceStage ───────────────────────────────────────────── */
 const DiceStage = forwardRef(function DiceStage({ onSombraChange }, ref) {
@@ -203,7 +175,11 @@ const DiceStage = forwardRef(function DiceStage({ onSombraChange }, ref) {
       const coltDiv = document.createElement('div')
       coltDiv.className = 'colt-wrap'
       coltDiv.setAttribute('aria-hidden', 'true')
-      coltDiv.innerHTML = `<svg class="colt-svg" viewBox="0 0 160 56" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gmetal" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#7a6850"/><stop offset="100%" stop-color="#3a3228"/></linearGradient><linearGradient id="ggrip" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6b4a38"/><stop offset="100%" stop-color="#1e120c"/></linearGradient></defs><rect x="0" y="21" width="58" height="11" rx="1.5" fill="#252018"/><rect x="54" y="19" width="8" height="15" fill="#120c08"/><ellipse cx="68" cy="25" rx="14" ry="16" fill="url(#gmetal)" stroke="#1a0f08" stroke-width="1"/><ellipse cx="68" cy="25" rx="6" ry="7" fill="#0d0a08" opacity="0.5"/><path d="M56 11 L102 13 L106 20 L60 20 Z" fill="#5c4e42"/><path d="M82 16 L82 31 L74 33 L88 46 L110 48 L122 34 L118 12 L96 6 Z" fill="url(#gmetal)"/><path d="M90 32 L84 54 L100 58 L112 48 L94 36 Z" fill="url(#ggrip)"/><path d="M78 36 Q68 38 70 50" stroke="#140c08" fill="none" stroke-width="2" stroke-linecap="round"/><path d="M104 8 L112 0 L118 4 L110 18 Z" fill="#4a4034"/><rect x="52" y="13" width="4" height="8" fill="#0d0a08"/><circle cx="118" cy="22" r="3" fill="#2a2218"/></svg>`
+      const coltImage = document.createElement('img')
+      coltImage.src = coltImg
+      coltImage.alt = ''
+      coltImage.className = 'colt-photo'
+      coltDiv.appendChild(coltImage)
       fx.appendChild(coltDiv)
     }
     else if (atributo === 'alma')    { stage.classList.add('fx-soul'); fx = buildSoulFx() }
