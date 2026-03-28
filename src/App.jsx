@@ -12,7 +12,14 @@ const Admin        = lazy(() => import('./pages/Admin'))
 function Loading() {
   return (
     <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--bege-escuro)' }}>
-      Carregando…
+      <p style={{ fontSize: '1.1rem', marginBottom: 8 }}>Carregando…</p>
+      <p style={{ fontSize: '0.8rem', opacity: 0.5 }}>
+        Se esta tela não sair,{' '}
+        <a href="." style={{ color: 'inherit' }} onClick={() => {
+          caches?.keys?.().then(k => k.forEach(n => caches.delete(n)))
+          window.location.reload()
+        }}>clique aqui para recarregar</a>.
+      </p>
     </div>
   )
 }
