@@ -197,6 +197,54 @@ const HUMOR_JUIZ = [
   { resultado: '5–6', nome: 'O Arauto da Guerra (Frio e Implacável)', desc: 'Sorri no meio de um massacre. Julga os jogadores diretamente, exige sacrifícios de sangue imediatamente ou manda capangas destruírem o grupo.' },
 ]
 
+const AVENTURAS = [
+  {
+    nome: 'O Batismo de Areia',
+    foco: 'Foco em Combate e Moralidade',
+    cenario: 'A cantina La Última Gota — um casebre de adobe caindo aos pedaços na fronteira de Sonora. O calor lá dentro é pior que do lado de fora. O ar cheira a suor, fumo barato e sangue seco.',
+    situacao: 'Os jogadores estão falidos, com os cantis vazios e as armas na mesa. Um tenente mexicano corrupto está oferecendo o primeiro contrato: 50 moedas de prata adiantadas para caçarem escalpos em um vilarejo próximo.',
+    estopim: 'Antes que os jogadores peguem a prata, a porta é chutada. Três Caçadores de Escalpos rivais entram, bêbados e armados com escopetas. Eles matam o tenente com um tiro no rosto e olham para os jogadores. "O contrato e a prata são nossos, gringos."',
+    mecanicas: [
+      'Tiroteio confinado: errar um tiro (6−) significa acertar lamparinas de óleo — a cantina começa a pegar fogo.',
+      'Teste de Pólvora sob pressão com fumaça ardendo nos olhos.',
+    ],
+    especial: {
+      label: '☁ A Escolha da Sombra',
+      texto: 'Com a taverna em chamas, o dono (um civil) fica preso sob uma viga. Os jogadores podem ajudá-lo (não ganham nada, perdem tempo) ou deixá-lo queimar para saquear o tenente e roubar a prata — ganham o dinheiro, mas marcam +1 Sombra.',
+    },
+  },
+  {
+    nome: 'A Carroça de Ossos',
+    foco: 'Foco em Mistério e Terror',
+    cenario: 'Um desfiladeiro estreito no deserto de Chihuahua. O vento uiva entre as pedras. Os jogadores viajam há dias, com os suprimentos no limite.',
+    situacao: 'Eles encontram uma diligência de colonos tombada. Três corpos no chão, crivados de flechas Apaches. Os cavalos foram mortos e a bagagem revirada.',
+    estopim: 'Se um jogador rolar Deserto para investigar a cena, descobre a verdade: as flechas foram colocadas de propósito. Os cortes nos crânios foram feitos com facas de aço cirúrgico, não por nativos.',
+    mecanicas: [
+      'Os verdadeiros assassinos (Desertores Esfomeados) estão escondidos nas pedras acima, esperando os jogadores se distraírem com o saque para emboscá-los.',
+      'Teste de Carne para buscar abrigo quando o primeiro tiro de rifle zunir pela orelha.',
+    ],
+    especial: {
+      label: '☽ A Presença do Juiz',
+      texto: 'Após o combate, os jogadores olham para cima. O Juiz está sentado em um pico inatingível, desenhando a carnificina em seu caderno. Ele sorri, atira uma moeda de ouro manchada de sangue para baixo, levanta-se e desaparece na poeira.',
+    },
+  },
+  {
+    nome: 'O Poço do Diabo',
+    foco: 'Foco em Sobrevivência Extrema',
+    cenario: 'Ruínas de uma missão jesuíta sem teto, cercada por cruzes de madeira apodrecidas. O único poço de água num raio de oitenta quilômetros fica no centro do pátio.',
+    situacao: 'Os jogadores chegam no limite (talvez já com 1 Ferimento de Desidratação). A missão está ocupada por cinco Rurales. O líder, sargento Morales, tem uma metralhadora Gatling velha emperrada apontada para o portão.',
+    estopim: '"A água é do Governador. Um cantil custa uma bota, um rifle ou uma orelha. Escolham." — Sargento Morales, sorrindo sob o chapéu.',
+    mecanicas: [
+      'O Falso Profeta pode tentar intimidar a milícia rolando Alma.',
+      'O Rastreador pode rolar Deserto para achar uma entrada pelos fundos desmoronados da igreja e emboscá-los.',
+    ],
+    especial: {
+      label: '💧 O Preço de Sangue',
+      texto: 'Se tomarem o poço, a água está turva, marrom e cheirando a enxofre. Beber exige Carne. 10+: sacia a sede. 7–9: sacia, mas causa vômitos — desvantagem na próxima meia hora. 6−: disenteria (1 Ferimento contínuo até achar remédio).',
+    },
+  },
+]
+
 /* ── Página ──────────────────────────────────────────────── */
 export default function LivroMestre() {
   return (
@@ -331,6 +379,70 @@ export default function LivroMestre() {
             ))}
           </div>
         </Secao>
+
+        {/* ── Aventuras ── */}
+        <div className="section">
+          <h2>Aventuras de Estreia</h2>
+          <p className="note" style={{ marginBottom: 20 }}>
+            Três cenários prontos para jogar os personagens no moedor de carne logo no
+            primeiro minuto de jogo. Cada um apresenta um foco mecânico diferente.
+          </p>
+
+          {AVENTURAS.map((av, i) => (
+            <div key={i} style={{
+              background: 'rgba(0,0,0,0.18)',
+              border: '1px solid rgba(92,61,46,0.5)',
+              borderRadius: 8,
+              padding: '20px 22px',
+              marginBottom: 20,
+            }}>
+              {/* Cabeçalho */}
+              <div style={{ marginBottom: 14 }}>
+                <h3 style={{ color: 'var(--dourado)', margin: '0 0 4px', fontSize: '1.05rem' }}>
+                  {i + 1}. {av.nome}
+                </h3>
+                <span style={{
+                  fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em',
+                  color: 'var(--vermelho)', opacity: 0.9,
+                }}>{av.foco}</span>
+              </div>
+
+              {/* Bloco de cenário / situação / estopim */}
+              {[
+                { label: '📍 Cenário',   texto: av.cenario },
+                { label: '⚖ Situação',  texto: av.situacao },
+                { label: '💥 Estopim',   texto: av.estopim },
+              ].map(b => (
+                <div key={b.label} style={{ marginBottom: 12 }}>
+                  <span className="admin-label">{b.label}</span>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.88rem', lineHeight: 1.7 }}>{b.texto}</p>
+                </div>
+              ))}
+
+              {/* Desafios mecânicos */}
+              <div style={{ marginBottom: 12 }}>
+                <span className="admin-label">🎲 Desafios Mecânicos</span>
+                <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: '0.88rem', lineHeight: 1.8 }}>
+                  {av.mecanicas.map((m, j) => <li key={j}>{m}</li>)}
+                </ul>
+              </div>
+
+              {/* Elemento especial (sombra / juiz / preço) */}
+              <div style={{
+                background: 'rgba(139,26,26,0.12)',
+                border: '1px solid rgba(139,26,26,0.35)',
+                borderRadius: 6, padding: '10px 14px',
+              }}>
+                <span className="admin-label" style={{ color: 'var(--vermelho)' }}>
+                  {av.especial.label}
+                </span>
+                <p style={{ margin: '4px 0 0', fontSize: '0.87rem', lineHeight: 1.7 }}>
+                  {av.especial.texto}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <p className="quote" style={{ marginTop: '2rem' }}>
           A guerra é deus. E o Juiz é seu profeta.
