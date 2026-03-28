@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop'
+import 'react-image-crop/dist/ReactCrop.css'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { getDb, isFirebaseConfigured } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
@@ -15,30 +17,112 @@ const INITIAL = {
   agua: 'Cheio', provisoes: '', fotoBase64: '',
 }
 
-/* Comprime a imagem para JPEG ≤ 350×350 px, ~30–60 kB — cabe no doc do Firestore */
-function comprimirImagem(file, maxDim = 350, qualidade = 0.55) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
-      const w = Math.round(img.width  * scale)
-      const h = Math.round(img.height * scale)
-      const canvas = document.createElement('canvas')
-      canvas.width  = w
-      canvas.height = h
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-      URL.revokeObjectURL(url)
-      resolve(canvas.toDataURL('image/jpeg', qualidade))
-    }
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Falha ao ler imagem')) }
-    img.src = url
-  })
+/* Aplica o recorte selecionado e retorna base64 JPEG comprimido (~30–60 kB) */
+function aplicarRecorte(imgEl, pixelCrop, outputSize = 350, qualidade = 0.7) {
+  const scaleX = imgEl.naturalWidth  / imgEl.width
+  const scaleY = imgEl.naturalHeight / imgEl.height
+  const canvas = document.createElement('canvas')
+  canvas.width  = outputSize
+  canvas.height = outputSize
+  canvas.getContext('2d').drawImage(
+    imgEl,
+    pixelCrop.x * scaleX, pixelCrop.y * scaleY,
+    pixelCrop.width * scaleX, pixelCrop.height * scaleY,
+    0, 0, outputSize, outputSize,
+  )
+  return canvas.toDataURL('image/jpeg', qualidade)
+}
+
+/* ── Modal de recorte ────────────────────────────────────── */
+function CropModal({ srcUrl, onConfirm, onCancel }) {
+  const imgRef       = useRef(null)
+  const [crop,          setCrop]          = useState()
+  const [completedCrop, setCompletedCrop] = useState()
+
+  function onImageLoad(e) {
+    const { width, height } = e.currentTarget
+    setCrop(centerCrop(
+      makeAspectCrop({ unit: '%', width: 85 }, 1, width, height),
+      width, height,
+    ))
+  }
+
+  function handleConfirm() {
+    if (!completedCrop || !imgRef.current) return
+    onConfirm(aplicarRecorte(imgRef.current, completedCrop))
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.82)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 16,
+    }}>
+      <div style={{
+        background: 'var(--fundo-card)',
+        border: '1px solid var(--marrom)',
+        borderRadius: 10,
+        padding: '24px 20px',
+        maxWidth: 480, width: '100%',
+        display: 'flex', flexDirection: 'column', gap: 16,
+        boxShadow: '0 8px 40px rgba(0,0,0,0.7)',
+      }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--bege-escuro)' }}>
+            Recortar retrato
+          </h3>
+          <p className="note" style={{ margin: '4px 0 0', fontSize: '0.8rem' }}>
+            Arraste para reposicionar · redimensione pelas alças dos cantos.
+          </p>
+        </div>
+
+        {/* Área de recorte */}
+        <div style={{
+          maxHeight: '55vh', overflowY: 'auto',
+          display: 'flex', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.4)', borderRadius: 6, padding: 8,
+        }}>
+          <ReactCrop
+            crop={crop}
+            onChange={(_, pct) => setCrop(pct)}
+            onComplete={c => setCompletedCrop(c)}
+            aspect={1}
+            circularCrop
+            minWidth={60}
+          >
+            <img
+              ref={imgRef}
+              src={srcUrl}
+              onLoad={onImageLoad}
+              alt="Recorte"
+              style={{ maxWidth: '100%', maxHeight: '50vh', display: 'block' }}
+            />
+          </ReactCrop>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button type="button" className="secondary"
+            style={{ minWidth: 'auto', padding: '10px 20px' }}
+            onClick={onCancel}>
+            Cancelar
+          </button>
+          <button type="button"
+            style={{ minWidth: 'auto', padding: '10px 24px' }}
+            onClick={handleConfirm}
+            disabled={!completedCrop?.width}>
+            Confirmar recorte
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function Ficha() {
   const [fields, setFields] = useState(INITIAL)
   const [cloudStatus, setCloudStatus] = useState('')
+  const [cropSrc, setCropSrc]   = useState(null)   // URL temporária para o modal
   const statusTimer = useRef(null)
   const { user } = useAuth()
 
@@ -98,15 +182,24 @@ export default function Ficha() {
     if (snap.exists()) { setFields(prev => ({ ...prev, ...snap.data() })); showStatus('✔ Carregado!') }
   }
 
-  async function handleFoto(e) {
+  function handleFoto(e) {
     const f = e.target.files?.[0]
     if (!f?.type.startsWith('image/')) return
-    try {
-      const b64 = await comprimirImagem(f)
-      set('fotoBase64', b64)
-    } catch (_) {
-      showStatus('Erro ao processar imagem.')
-    }
+    // Abre o modal de recorte com o URL temporário do arquivo
+    setCropSrc(URL.createObjectURL(f))
+    // Limpa o input para permitir re-selecionar o mesmo arquivo
+    e.target.value = ''
+  }
+
+  function handleCropConfirm(base64) {
+    set('fotoBase64', base64)
+    URL.revokeObjectURL(cropSrc)
+    setCropSrc(null)
+  }
+
+  function handleCropCancel() {
+    URL.revokeObjectURL(cropSrc)
+    setCropSrc(null)
   }
 
   const exportar = useCallback(() => {
@@ -153,6 +246,15 @@ export default function Ficha() {
   return (
     <>
       <Nav />
+
+      {/* Modal de recorte — aparece quando o usuário seleciona uma foto */}
+      {cropSrc && (
+        <CropModal
+          srcUrl={cropSrc}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
+      )}
 
       {/* Painel de nuvem — sempre visível (rota protegida) */}
       <div className="cloud-panel">
