@@ -8,6 +8,7 @@ const Rolagens     = lazy(() => import('./pages/Rolagens'))
 const Habilidades  = lazy(() => import('./pages/Habilidades'))
 const LivroJogador = lazy(() => import('./pages/LivroJogador'))
 const Admin        = lazy(() => import('./pages/Admin'))
+const LivroMestre  = lazy(() => import('./pages/LivroMestre'))
 
 function Loading() {
   return (
@@ -66,6 +67,11 @@ function AppRoutes() {
         {/* Páginas públicas — material de referência */}
         <Route path="/habilidades"   element={<Habilidades />} />
         <Route path="/livro-jogador" element={<LivroJogador />} />
+
+        {/* Livro do Mestre — exclusivo para admin */}
+        <Route path="/livro-mestre" element={
+          <PrivateRoute><LivroMestre /></PrivateRoute>
+        } />
 
         {/* Qualquer rota desconhecida → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
