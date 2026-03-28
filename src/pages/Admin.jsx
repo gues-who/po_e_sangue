@@ -105,9 +105,31 @@ function FichaCard({ uid, data }) {
     <div className="admin-ficha-card">
       {/* ── Cabeçalho sempre visível ── */}
       <div className="admin-ficha-header" style={{ cursor: 'default' }}>
-        <div className="admin-ficha-header-info">
-          <span className="admin-ficha-nome">{data.nome || '(sem nome)'}</span>
-          <span className="admin-ficha-email note">{data.email || uid}</span>
+        <div className="admin-ficha-header-info" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {data.fotoBase64 ? (
+            <img
+              src={data.fotoBase64}
+              alt={data.nome || 'Retrato'}
+              style={{
+                width: 52, height: 52, borderRadius: '50%',
+                objectFit: 'cover', flexShrink: 0,
+                border: '2px solid var(--marrom)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(92,61,46,0.3)',
+              border: '2px solid var(--marrom)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.4rem', opacity: 0.5,
+            }}>🤠</div>
+          )}
+          <div>
+            <span className="admin-ficha-nome">{data.nome || '(sem nome)'}</span>
+            <span className="admin-ficha-email note" style={{ display: 'block' }}>{data.email || uid}</span>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="note text-xs opacity-60">{data.arquetipo || '—'}</span>

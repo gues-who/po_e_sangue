@@ -12,12 +12,32 @@ const INITIAL = {
   carne: '0', polvora: '0', deserto: '0', alma: '0', sombra: '0',
   ferimento1: false, ferimento2: false, ferimento3: false,
   aparencia_hab: '', arma1: '', municao: '0', arma2: '',
-  agua: 'Cheio', provisoes: '',
+  agua: 'Cheio', provisoes: '', fotoBase64: '',
+}
+
+/* Comprime a imagem para JPEG ≤ 350×350 px, ~30–60 kB — cabe no doc do Firestore */
+function comprimirImagem(file, maxDim = 350, qualidade = 0.55) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+      const w = Math.round(img.width  * scale)
+      const h = Math.round(img.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width  = w
+      canvas.height = h
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+      URL.revokeObjectURL(url)
+      resolve(canvas.toDataURL('image/jpeg', qualidade))
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Falha ao ler imagem')) }
+    img.src = url
+  })
 }
 
 export default function Ficha() {
   const [fields, setFields] = useState(INITIAL)
-  const [fotoSrc, setFotoSrc]       = useState(null)
   const [cloudStatus, setCloudStatus] = useState('')
   const statusTimer = useRef(null)
   const { user } = useAuth()
@@ -78,12 +98,15 @@ export default function Ficha() {
     if (snap.exists()) { setFields(prev => ({ ...prev, ...snap.data() })); showStatus('✔ Carregado!') }
   }
 
-  function handleFoto(e) {
+  async function handleFoto(e) {
     const f = e.target.files?.[0]
     if (!f?.type.startsWith('image/')) return
-    const reader = new FileReader()
-    reader.onload = ev => setFotoSrc(ev.target.result)
-    reader.readAsDataURL(f)
+    try {
+      const b64 = await comprimirImagem(f)
+      set('fotoBase64', b64)
+    } catch (_) {
+      showStatus('Erro ao processar imagem.')
+    }
   }
 
   const exportar = useCallback(() => {
@@ -152,7 +175,7 @@ export default function Ficha() {
         <p className="quote">A guerra é deus.</p>
       </header>
 
-      <WantedPoster nome={fields.nome} nivel={fields.nivel} fotoSrc={fotoSrc} />
+      <WantedPoster nome={fields.nome} nivel={fields.nivel} fotoSrc={fields.fotoBase64 || null} />
 
       <form id="fichaForm" onSubmit={e => e.preventDefault()}>
 

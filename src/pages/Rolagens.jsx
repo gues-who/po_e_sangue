@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore'
 import { getDb, isFirebaseConfigured } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import Nav from '../components/Nav'
@@ -33,12 +33,14 @@ export default function Rolagens() {
   const [ctx, setCtx] = useState({ combate: false, isoladoOuUltimo: false, rastreamentoRecursos: false, intimidacaoAlma: false, ferimento1: false, usarSombraNoLugar: false })
   const [sessionRolls, setSessionRolls] = useState([])
   const [cloudAtivo, setCloudAtivo] = useState(false)
+  const [fotoBase64, setFotoBase64] = useState('')
+  const [nomePersonagem, setNomePersonagem] = useState('')
 
   useEffect(() => {
     setCloudAtivo(!!user && isFirebaseConfigured)
   }, [user])
 
-  // Pré-carregar atributos do localStorage
+  // Pré-carregar atributos e foto do localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY)
@@ -48,10 +50,26 @@ export default function Rolagens() {
         carne: p.carne ?? prev.carne, polvora: p.polvora ?? prev.polvora,
         deserto: p.deserto ?? prev.deserto, alma: p.alma ?? prev.alma, sombra: p.sombra ?? prev.sombra,
       }))
-      if (p.arquetipo) setArquetipo(p.arquetipo)
+      if (p.arquetipo)  setArquetipo(p.arquetipo)
+      if (p.nome)       setNomePersonagem(p.nome)
+      if (p.fotoBase64) setFotoBase64(p.fotoBase64)
       if (p.ferimento1 !== undefined) setCtx(prev => ({ ...prev, ferimento1: !!p.ferimento1 }))
     } catch (_) {}
   }, [])
+
+  // Carregar foto do Firestore (fonte canônica) quando o user estiver disponível
+  useEffect(() => {
+    if (!user || !isFirebaseConfigured) return
+    getDb().then(db => {
+      if (!db) return
+      return getDoc(doc(db, 'fichas', user.uid))
+    }).then(snap => {
+      if (!snap?.exists()) return
+      const d = snap.data()
+      if (d.fotoBase64) setFotoBase64(d.fotoBase64)
+      if (d.nome)       setNomePersonagem(d.nome)
+    }).catch(() => {})
+  }, [user])
 
   function setAttr(id, val) { setAttrs(prev => ({ ...prev, [id]: val })) }
   function toggleCtx(id) { setCtx(prev => ({ ...prev, [id]: !prev[id] })) }
@@ -115,7 +133,23 @@ export default function Rolagens() {
     <>
       <Nav />
       <header className="page-header">
-        <h1>Sala de rolagem</h1>
+        {fotoBase64 && (
+          <div style={{
+            display: 'flex', justifyContent: 'center', marginBottom: 12,
+          }}>
+            <img
+              src={fotoBase64}
+              alt="Retrato do personagem"
+              style={{
+                width: 80, height: 80, borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid var(--marrom)',
+                boxShadow: '0 0 12px rgba(0,0,0,0.6)',
+              }}
+            />
+          </div>
+        )}
+        <h1>{nomePersonagem || 'Sala de rolagem'}</h1>
         <p className="quote">2d6 + atributo · 10+ Sangue Frio · 7–9 Preço de Sangue · 6− O Deserto Ri</p>
       </header>
 
