@@ -191,10 +191,27 @@ export default function Ficha() {
     e.target.value = ''
   }
 
-  function handleCropConfirm(base64) {
+  async function handleCropConfirm(base64) {
+    // 1. Atualiza localmente
     set('fotoBase64', base64)
     URL.revokeObjectURL(cropSrc)
     setCropSrc(null)
+
+    // 2. Salva imediatamente no Firestore para o mestre ver
+    if (!user || !isFirebaseConfigured) return
+    try {
+      showStatus('Salvando foto…')
+      const db = await getDb()
+      // Usa setDoc com merge para não sobrescrever outros campos não carregados ainda
+      await setDoc(
+        doc(db, 'fichas', user.uid),
+        { fotoBase64: base64, email: user.email, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+      showStatus('✔ Foto salva na nuvem!')
+    } catch (e) {
+      showStatus('Foto salva localmente. Clique "Salvar na nuvem" para sincronizar.')
+    }
   }
 
   function handleCropCancel() {
