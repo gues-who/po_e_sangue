@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { useState, useEffect, useRef } from 'react'
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
 import { getDb, isFirebaseConfigured, ADMIN_EMAIL } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Link } from 'react-router-dom'
@@ -215,10 +215,10 @@ function FichaCard({ uid, data }) {
 }
 
 /* ── Linha de rolagem ───────────────────────────────────── */
-function RolagemRow({ data }) {
+function RolagemRow({ data, novo }) {
   const modSinal = (data.modTotal || 0) >= 0 ? '+' + data.modTotal : String(data.modTotal)
   return (
-    <div className="hist-row flex-wrap gap-y-1">
+    <div className={`hist-row flex-wrap gap-y-1${novo ? ' hist-row--new' : ''}`}>
       <span className="hist-hora shrink-0" title={formatarData(data.timestamp)}>
         {tempoRelativo(data.timestamp)}
       </span>
@@ -239,6 +239,16 @@ function RolagemRow({ data }) {
   )
 }
 
+/* ── Indicador "ao vivo" ────────────────────────────────── */
+function LiveBadge() {
+  return (
+    <span className="live-badge" title="Atualizando em tempo real">
+      <span className="live-dot" />
+      Ao vivo
+    </span>
+  )
+}
+
 /* ── Admin principal ────────────────────────────────────── */
 export default function Admin() {
   const { user, loading } = useAuth()
@@ -250,35 +260,66 @@ export default function Admin() {
   const [rolagens, setRolagens]         = useState([])
   const [rolagensStatus, setRolagensStatus] = useState('')
   const [filtroJogador, setFiltroJogador]   = useState('')
+  const [aoVivo, setAoVivo]             = useState(false)
+  const [novosIds, setNovosIds]        = useState(() => new Set())
 
-  const carregarFichas = useCallback(async () => {
-    if (!isFirebaseConfigured) return
-    setFichasStatus('Carregando fichas…')
-    try {
-      const db   = await getDb()
-      const snap = await getDocs(collection(db, 'fichas'))
-      const arr  = snap.docs.map(d => ({ uid: d.id, data: d.data() }))
-      setFichas(arr)
-      setFichasStatus(arr.length + ' ficha(s) carregada(s).')
-    } catch (e) { setFichasStatus('Erro: ' + e.message) }
-  }, [])
+  const idsConhecidos = useRef(new Set())
+  const flashTimer    = useRef(null)
 
-  const carregarRolagens = useCallback(async () => {
-    if (!isFirebaseConfigured) return
-    setRolagensStatus('Carregando rolagens…')
-    try {
-      const db   = await getDb()
-      const q    = query(collection(db, 'rolagens'), orderBy('timestamp', 'desc'), limit(200))
-      const snap = await getDocs(q)
-      setRolagens(snap.docs.map(d => d.data()))
-      setRolagensStatus(snap.size + ' rolagem(ns) carregada(s).')
-    } catch (e) { setRolagensStatus('Erro: ' + e.message) }
-  }, [])
-
-  useEffect(() => { if (isAdmin) carregarFichas() }, [isAdmin, carregarFichas])
+  // Assinaturas em tempo real: fichas e rolagens de todos os jogadores.
+  // As Security Rules permitem ao mestre ler ambas as coleções.
   useEffect(() => {
-    if (isAdmin && aba === 'rolagens' && rolagens.length === 0) carregarRolagens()
-  }, [aba, isAdmin])
+    if (!isAdmin || !isFirebaseConfigured) return
+
+    let cancelado = false
+    let unsubFichas, unsubRolagens
+    setFichasStatus('Conectando…')
+    setRolagensStatus('Conectando…')
+
+    getDb().then(db => {
+      if (!db || cancelado) return
+
+      unsubFichas = onSnapshot(
+        collection(db, 'fichas'),
+        snap => {
+          setFichas(snap.docs.map(d => ({ uid: d.id, data: d.data() })))
+          setFichasStatus(snap.size + ' ficha(s)')
+        },
+        err => setFichasStatus('Erro: ' + err.message),
+      )
+
+      const q = query(collection(db, 'rolagens'), orderBy('timestamp', 'desc'), limit(200))
+      unsubRolagens = onSnapshot(
+        q,
+        snap => {
+          // Destaca rolagens novas (após o carregamento inicial)
+          if (idsConhecidos.current.size > 0) {
+            const novos = snap.docChanges()
+              .filter(c => c.type === 'added' && !idsConhecidos.current.has(c.doc.id))
+              .map(c => c.doc.id)
+            if (novos.length) {
+              setNovosIds(new Set(novos))
+              clearTimeout(flashTimer.current)
+              flashTimer.current = setTimeout(() => setNovosIds(new Set()), 1500)
+            }
+          }
+          snap.docs.forEach(d => idsConhecidos.current.add(d.id))
+          setRolagens(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+          setRolagensStatus(snap.size + ' rolagem(ns)')
+          setAoVivo(true)
+        },
+        err => { setRolagensStatus('Erro: ' + err.message); setAoVivo(false) },
+      )
+    })
+
+    return () => {
+      cancelado = true
+      clearTimeout(flashTimer.current)
+      unsubFichas?.()
+      unsubRolagens?.()
+      setAoVivo(false)
+    }
+  }, [isAdmin])
 
   if (loading) return <><Nav /><p className="text-center p-10 opacity-60">Verificando acesso…</p></>
 
@@ -309,9 +350,12 @@ export default function Admin() {
         <p className="text-sm opacity-70">
           Mestre: <strong className="opacity-100">{user.email}</strong>
         </p>
-        <span className="text-xs note">
-          {fichas.length} jogador(es) · {rolagens.length} rolagem(ns)
-        </span>
+        <div className="flex items-center gap-3">
+          {aoVivo && <LiveBadge />}
+          <span className="text-xs note">
+            {fichas.length} jogador(es) · {rolagens.length} rolagem(ns)
+          </span>
+        </div>
       </div>
 
       {/* Abas */}
@@ -330,10 +374,7 @@ export default function Admin() {
         <div className="section">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
             <h2 className="m-0 border-none p-0">Fichas dos Jogadores</h2>
-            <button onClick={carregarFichas} className="secondary"
-              style={{minWidth:'auto',padding:'10px 18px'}}>
-              Atualizar
-            </button>
+            {aoVivo && <LiveBadge />}
           </div>
           <p className="note text-xs mb-3">{fichasStatus}</p>
           {fichas.length === 0
@@ -347,18 +388,15 @@ export default function Admin() {
       {aba === 'rolagens' && (
         <div className="section">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-            <h2 className="m-0 border-none p-0">Histórico de Rolagens</h2>
-            <div className="flex gap-2 flex-wrap items-center">
-              <select value={filtroJogador} onChange={e => setFiltroJogador(e.target.value)}
-                className="text-sm" style={{padding:'8px 12px',minWidth:160}}>
-                <option value="">Todos os jogadores</option>
-                {emailsUnicos.map(email => <option key={email} value={email}>{email}</option>)}
-              </select>
-              <button onClick={carregarRolagens} className="secondary"
-                style={{minWidth:'auto',padding:'10px 18px'}}>
-                Atualizar
-              </button>
+            <div className="flex items-center gap-3">
+              <h2 className="m-0 border-none p-0">Histórico de Rolagens</h2>
+              {aoVivo && <LiveBadge />}
             </div>
+            <select value={filtroJogador} onChange={e => setFiltroJogador(e.target.value)}
+              className="text-sm" style={{padding:'8px 12px',minWidth:160}}>
+              <option value="">Todos os jogadores</option>
+              {emailsUnicos.map(email => <option key={email} value={email}>{email}</option>)}
+            </select>
           </div>
           <p className="note text-xs mb-3">
             {rolagensStatus}
@@ -367,7 +405,7 @@ export default function Admin() {
           <div className="hist-lista">
             {rolagensFiltradas.length === 0
               ? <p className="note text-sm opacity-60">Nenhuma rolagem encontrada.</p>
-              : rolagensFiltradas.map((r, i) => <RolagemRow key={i} data={r} />)
+              : rolagensFiltradas.map((r) => <RolagemRow key={r.id} data={r} novo={novosIds.has(r.id)} />)
             }
           </div>
         </div>
