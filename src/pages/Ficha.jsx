@@ -124,34 +124,45 @@ export default function Ficha() {
   const [cloudStatus, setCloudStatus] = useState('')
   const [cropSrc, setCropSrc]   = useState(null)   // URL temporária para o modal
   const statusTimer = useRef(null)
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
-  // Carregar localStorage no mount
+  // Carrega a ficha: cache local do próprio usuário primeiro (resposta
+  // imediata), depois o Firestore como fonte canônica. O cache só é
+  // aplicado se pertencer ao usuário atual — evita exibir dados de outra
+  // conta usada no mesmo navegador.
   useEffect(() => {
+    if (loading || !user) return
+
     try {
-      const raw = localStorage.getItem(LS_KEY)
-      if (raw) setFields(prev => ({ ...prev, ...JSON.parse(raw) }))
+      const p = JSON.parse(localStorage.getItem(LS_KEY) || '{}')
+      const { _owner, ...dados } = p
+      setFields(_owner === user.uid ? { ...INITIAL, ...dados } : INITIAL)
+    } catch (_) { setFields(INITIAL) }
+
+    if (!isFirebaseConfigured) return
+    let cancelado = false
+    getDb().then(db => db && getDoc(doc(db, 'fichas', user.uid)))
+      .then(snap => {
+        if (cancelado || !snap) return
+        if (snap.exists()) {
+          setFields(prev => ({ ...prev, ...snap.data() }))
+          showStatus('Ficha carregada da nuvem.')
+        } else {
+          // Usuário ainda sem ficha → formulário em branco
+          setFields(INITIAL)
+        }
+      })
+      .catch(e => showStatus('Erro ao carregar: ' + e.message))
+    return () => { cancelado = true }
+  }, [user, loading])
+
+  // Auto-salvar no localStorage (marcado com o dono) sempre que fields muda
+  useEffect(() => {
+    if (!user) return
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ ...fields, _owner: user.uid }))
     } catch (_) {}
-  }, [])
-
-  // Auto-salvar no localStorage sempre que fields muda
-  useEffect(() => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(fields)) } catch (_) {}
-  }, [fields])
-
-  // Carregar do Firestore quando usuário faz login
-  useEffect(() => {
-    if (!user || !isFirebaseConfigured) return
-    getDb().then(db => {
-      if (!db) return
-      return getDoc(doc(db, 'fichas', user.uid))
-    }).then(snap => {
-      if (snap?.exists()) {
-        setFields(prev => ({ ...prev, ...snap.data() }))
-        showStatus('✔ Ficha carregada da nuvem.')
-      }
-    }).catch(e => showStatus('Erro ao carregar: ' + e.message))
-  }, [user])
+  }, [fields, user])
 
   function showStatus(msg) {
     setCloudStatus(msg)
@@ -170,7 +181,7 @@ export default function Ficha() {
       await setDoc(doc(db, 'fichas', user.uid), {
         ...fields, email: user.email, updatedAt: serverTimestamp(),
       })
-      showStatus('✔ Ficha salva na nuvem!')
+      showStatus('Ficha salva na nuvem.')
     } catch (e) { showStatus('Erro: ' + e.message) }
   }
 
@@ -179,7 +190,7 @@ export default function Ficha() {
     if (!confirm('Carregar da nuvem vai sobrescrever os dados locais. Continuar?')) return
     const db = await getDb()
     const snap = await getDoc(doc(db, 'fichas', user.uid))
-    if (snap.exists()) { setFields(prev => ({ ...prev, ...snap.data() })); showStatus('✔ Carregado!') }
+    if (snap.exists()) { setFields(prev => ({ ...prev, ...snap.data() })); showStatus('Carregado.') }
   }
 
   function handleFoto(e) {
@@ -208,7 +219,7 @@ export default function Ficha() {
         { fotoBase64: base64, email: user.email, updatedAt: serverTimestamp() },
         { merge: true },
       )
-      showStatus('✔ Foto salva na nuvem!')
+      showStatus('Foto salva na nuvem.')
     } catch (e) {
       showStatus('Foto salva localmente. Clique "Salvar na nuvem" para sincronizar.')
     }

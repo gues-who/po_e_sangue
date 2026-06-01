@@ -20,7 +20,6 @@ export default function WantedPoster({ nome, nivel, fotoSrc }) {
           Recompensa: <strong>$ {nivelDisplay}</strong>
         </div>
         <div className="wanted-sub">Vivo ou morto</div>
-        <div className="tumbleweed-deco" aria-hidden="true" />
       </div>
     </div>
   )

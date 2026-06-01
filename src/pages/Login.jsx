@@ -30,11 +30,10 @@ const ARQUETIPOS = [
 function Alert({ text, isError }) {
   if (!text) return null
   return (
-    <div className={`flex items-start gap-2 rounded-md px-4 py-3 text-sm mb-4
+    <div className={`flex items-start gap-2 rounded-md px-4 py-3 text-sm mb-4 border-l-2
       ${isError
-        ? 'bg-red-900/40 border border-red-700 text-red-200'
-        : 'bg-green-900/40 border border-green-700 text-green-200'}`}>
-      <span>{isError ? '⚠' : '✔'}</span>
+        ? 'bg-red-900/40 border-l-red-600 text-red-200'
+        : 'bg-green-900/40 border-l-green-600 text-green-200'}`}>
       <span>{text}</span>
     </div>
   )
@@ -68,8 +67,8 @@ function CriarPersonagem({ user, onConcluir }) {
           criadoEm:  serverTimestamp(),
         })
       }
-      // Salva no localStorage também
-      const dados = { nome: nome.trim(), arquetipo }
+      // Salva no localStorage também (marcado com o dono da ficha)
+      const dados = { nome: nome.trim(), arquetipo, _owner: user.uid }
       localStorage.setItem('poesangue_ficha_v1', JSON.stringify(dados))
       onConcluir()
     } catch (e) {
@@ -82,7 +81,6 @@ function CriarPersonagem({ user, onConcluir }) {
     <div className="auth-wrap">
       <div className="auth-card section">
         <div className="flex flex-col items-center gap-2 mb-6 text-center">
-          <div className="text-4xl">🤠</div>
           <h2 className="mb-0">Crie seu personagem</h2>
           <p className="text-sm opacity-70">
             Conta criada! Agora dê um nome ao seu foragido.
@@ -128,7 +126,7 @@ function CriarPersonagem({ user, onConcluir }) {
           </div>
 
           <button type="submit" disabled={salvando} className="w-full mt-2">
-            {salvando ? 'Criando personagem…' : 'Criar personagem e entrar →'}
+            {salvando ? 'Criando personagem…' : 'Criar personagem e entrar'}
           </button>
         </form>
       </div>
@@ -252,7 +250,7 @@ export default function Login() {
               </div>
 
               <button type="submit" disabled={loading} className="mt-2 w-full">
-                {loading ? 'Entrando…' : 'Entrar →'}
+                {loading ? 'Entrando…' : 'Entrar'}
               </button>
 
               <p className="note text-center text-xs mt-1">
@@ -295,7 +293,7 @@ export default function Login() {
               </div>
 
               <button type="submit" disabled={loading} className="mt-2 w-full">
-                {loading ? 'Criando conta…' : 'Criar conta →'}
+                {loading ? 'Criando conta…' : 'Criar conta'}
               </button>
             </form>
           )}

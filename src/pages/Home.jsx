@@ -6,25 +6,21 @@ const cards = [
     to: '/ficha',
     title: 'Ficha',
     desc: 'Cartaz de procurado, atributos, Sombra, ferimentos, inventário e exportação em texto.',
-    icon: '📜',
   },
   {
     to: '/rolagens',
     title: 'Rolagens',
     desc: '2d6 + atributo, contexto da cena e efeitos visuais por tipo de dado.',
-    icon: '🎲',
   },
   {
     to: '/habilidades',
     title: 'Habilidades',
     desc: 'Instinto de Trincheira, Nascido no Fogo, Olhos de Abutre, Fogo e Enxofre.',
-    icon: '⚔️',
   },
   {
     to: '/livro-jogador',
     title: 'Livro do jogador',
     desc: 'Resumo das regras: resultados, atributos, Sombra, ferimentos.',
-    icon: '📖',
   },
 ]
 
@@ -41,9 +37,8 @@ export default function Home() {
       </header>
 
       <div className="portal-grid">
-        {cards.map(({ to, title, desc, icon }) => (
+        {cards.map(({ to, title, desc }) => (
           <Link key={to} className="portal-card group" to={to}>
-            <span className="text-3xl mb-3 block">{icon}</span>
             <h2 className="mb-2">{title}</h2>
             <p className="text-sm leading-relaxed opacity-80">{desc}</p>
           </Link>

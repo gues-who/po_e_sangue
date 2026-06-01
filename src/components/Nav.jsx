@@ -9,6 +9,8 @@ export default function Nav() {
 
   async function handleLogout(e) {
     e.preventDefault()
+    // Limpa o cache local da ficha para não vazar entre contas no mesmo navegador
+    try { localStorage.removeItem('poesangue_ficha_v1') } catch (_) {}
     if (isFirebaseConfigured) await signOut(auth)
     navigate('/login', { replace: true })
   }

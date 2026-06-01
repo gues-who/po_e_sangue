@@ -96,10 +96,12 @@ function FichaCard({ uid, data }) {
   const [aberto, setAberto] = useState(false)
 
   const ferimentos = [
-    data.ferimento1 && '🩸 Sangrando',
-    data.ferimento2 && '⚠ Debilitado',
-    data.ferimento3 && '💀 Morte',
+    data.ferimento1 && 'Sangrando',
+    data.ferimento2 && 'Debilitado',
+    data.ferimento3 && 'Morte',
   ].filter(Boolean)
+
+  const inicial = (data.nome || '?').trim().charAt(0).toUpperCase() || '?'
 
   return (
     <div className="admin-ficha-card">
@@ -123,8 +125,9 @@ function FichaCard({ uid, data }) {
               background: 'rgba(92,61,46,0.3)',
               border: '2px solid var(--marrom)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.4rem', opacity: 0.5,
-            }}>🤠</div>
+              fontFamily: "'Rye', serif", fontSize: '1.3rem',
+              color: 'var(--bege-escuro)',
+            }}>{inicial}</div>
           )}
           <div>
             <span className="admin-ficha-nome">{data.nome || '(sem nome)'}</span>
@@ -139,7 +142,7 @@ function FichaCard({ uid, data }) {
             style={{ minWidth: 'auto', padding: '6px 12px', fontSize: '0.75rem' }}
             onClick={() => setAberto(v => !v)}
           >
-            {aberto ? '▲ Fechar' : '▼ Detalhes'}
+            {aberto ? 'Fechar' : 'Detalhes'}
           </button>
         </div>
       </div>
@@ -283,7 +286,6 @@ export default function Admin() {
     <>
       <Nav />
       <div className="section flex flex-col items-center gap-4 py-16 text-center">
-        <div className="text-5xl">🔒</div>
         <p className="text-ps-vermelho text-lg font-medium">Acesso negado.</p>
         <p className="opacity-70 text-sm">Este painel é restrito ao Mestre da campanha.</p>
         <Link to="/login" className="link-button mt-2">Entrar com outra conta</Link>
@@ -330,7 +332,7 @@ export default function Admin() {
             <h2 className="m-0 border-none p-0">Fichas dos Jogadores</h2>
             <button onClick={carregarFichas} className="secondary"
               style={{minWidth:'auto',padding:'10px 18px'}}>
-              ↺ Atualizar
+              Atualizar
             </button>
           </div>
           <p className="note text-xs mb-3">{fichasStatus}</p>
@@ -354,7 +356,7 @@ export default function Admin() {
               </select>
               <button onClick={carregarRolagens} className="secondary"
                 style={{minWidth:'auto',padding:'10px 18px'}}>
-                ↺ Atualizar
+                Atualizar
               </button>
             </div>
           </div>

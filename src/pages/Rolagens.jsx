@@ -24,11 +24,13 @@ function dadosTexto(res) {
   return `[${res.dadosUsados[0]}+${res.dadosUsados[1]}=${res.dadosBrutos[0]+res.dadosBrutos[1]}]`
 }
 
+const ATTRS_VAZIO = { carne: '0', polvora: '0', deserto: '0', alma: '0', sombra: '0' }
+
 export default function Rolagens() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const diceRef = useRef(null)
 
-  const [attrs, setAttrs] = useState({ carne: '0', polvora: '0', deserto: '0', alma: '0', sombra: '0' })
+  const [attrs, setAttrs] = useState(ATTRS_VAZIO)
   const [arquetipo, setArquetipo] = useState('O Ex-Soldado')
   const [ctx, setCtx] = useState({ combate: false, isoladoOuUltimo: false, rastreamentoRecursos: false, intimidacaoAlma: false, ferimento1: false, usarSombraNoLugar: false })
   const [sessionRolls, setSessionRolls] = useState([])
@@ -40,36 +42,67 @@ export default function Rolagens() {
     setCloudAtivo(!!user && isFirebaseConfigured)
   }, [user])
 
-  // Pré-carregar atributos e foto do localStorage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY)
-      if (!raw) return
-      const p = JSON.parse(raw)
-      setAttrs(prev => ({
-        carne: p.carne ?? prev.carne, polvora: p.polvora ?? prev.polvora,
-        deserto: p.deserto ?? prev.deserto, alma: p.alma ?? prev.alma, sombra: p.sombra ?? prev.sombra,
-      }))
-      if (p.arquetipo)  setArquetipo(p.arquetipo)
-      if (p.nome)       setNomePersonagem(p.nome)
-      if (p.fotoBase64) setFotoBase64(p.fotoBase64)
-      if (p.ferimento1 !== undefined) setCtx(prev => ({ ...prev, ferimento1: !!p.ferimento1 }))
-    } catch (_) {}
-  }, [])
+  // Aplica os dados de uma ficha (Firestore ou localStorage) ao formulário
+  function aplicarFicha(d) {
+    setAttrs({
+      carne: d.carne ?? '0', polvora: d.polvora ?? '0',
+      deserto: d.deserto ?? '0', alma: d.alma ?? '0', sombra: d.sombra ?? '0',
+    })
+    setArquetipo(d.arquetipo || 'O Ex-Soldado')
+    setNomePersonagem(d.nome || '')
+    setFotoBase64(d.fotoBase64 || '')
+    setCtx(prev => ({ ...prev, ferimento1: !!d.ferimento1 }))
+  }
 
-  // Carregar foto do Firestore (fonte canônica) quando o user estiver disponível
+  function limparFicha() {
+    setAttrs(ATTRS_VAZIO)
+    setArquetipo('O Ex-Soldado')
+    setNomePersonagem('')
+    setFotoBase64('')
+    setCtx(prev => ({ ...prev, ferimento1: false }))
+  }
+
+  // Carrega a ficha. Logado → Firestore é a fonte canônica.
+  // O localStorage só é usado se pertencer ao usuário atual (evita
+  // vazar dados de outra conta no mesmo navegador).
   useEffect(() => {
-    if (!user || !isFirebaseConfigured) return
-    getDb().then(db => {
-      if (!db) return
-      return getDoc(doc(db, 'fichas', user.uid))
-    }).then(snap => {
-      if (!snap?.exists()) return
-      const d = snap.data()
-      if (d.fotoBase64) setFotoBase64(d.fotoBase64)
-      if (d.nome)       setNomePersonagem(d.nome)
-    }).catch(() => {})
-  }, [user])
+    if (loading) return
+
+    // Sem login: usa o cache local apenas se não houver dono registrado
+    if (!user || !isFirebaseConfigured) {
+      try {
+        const p = JSON.parse(localStorage.getItem(LS_KEY) || '{}')
+        if (!p._owner) aplicarFicha(p)
+        else limparFicha()
+      } catch (_) { limparFicha() }
+      return
+    }
+
+    // Logado: aplica imediatamente o cache se for deste usuário (resposta rápida)
+    try {
+      const p = JSON.parse(localStorage.getItem(LS_KEY) || '{}')
+      if (p._owner === user.uid) aplicarFicha(p)
+      else limparFicha()
+    } catch (_) { limparFicha() }
+
+    // Firestore é a fonte canônica
+    let cancelado = false
+    getDb().then(db => db && getDoc(doc(db, 'fichas', user.uid)))
+      .then(snap => {
+        if (cancelado || !snap) return
+        if (snap.exists()) {
+          const d = snap.data()
+          aplicarFicha(d)
+          try { localStorage.setItem(LS_KEY, JSON.stringify({ ...d, _owner: user.uid })) } catch (_) {}
+        } else {
+          // Usuário ainda não criou ficha → começa vazio
+          limparFicha()
+          try { localStorage.removeItem(LS_KEY) } catch (_) {}
+        }
+      })
+      .catch(() => {})
+    return () => { cancelado = true }
+  }, [user, loading])
 
   function setAttr(id, val) { setAttrs(prev => ({ ...prev, [id]: val })) }
   function toggleCtx(id) { setCtx(prev => ({ ...prev, [id]: !prev[id] })) }
@@ -80,12 +113,13 @@ export default function Rolagens() {
       const raw = localStorage.getItem(LS_KEY)
       const d = raw ? JSON.parse(raw) : {}
       d.sombra = novoSombra
+      if (user) d._owner = user.uid
       localStorage.setItem(LS_KEY, JSON.stringify(d))
     } catch (_) {}
   }
 
   function getPersonagem() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}').nome || '' } catch (_) { return '' }
+    return nomePersonagem || ''
   }
 
   async function salvarRolagemFirestore(res, atributo, personagem) {
@@ -214,7 +248,7 @@ export default function Rolagens() {
         <div className="section book-page">
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10,marginBottom:14}}>
             <h2 style={{margin:0,border:'none',padding:0}}>Histórico da sessão</h2>
-            {cloudAtivo && <span className="hist-cloud-badge">☁ salvo na nuvem</span>}
+            {cloudAtivo && <span className="hist-cloud-badge">Salvo na nuvem</span>}
           </div>
           <div className="hist-lista">
             {sessionRolls.map((r, i) => {

@@ -24,12 +24,12 @@ function FichaAmeaca({ numero, nome, subtitulo, instinto, movimentos, saque, pec
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div>
-          <span className="admin-label">⚡ Instinto</span>
+          <span className="admin-label">Instinto</span>
           <p style={{ margin: '4px 0 0', fontSize: '0.92rem' }}>{instinto}</p>
         </div>
 
         <div>
-          <span className="admin-label">🎲 Movimentos (consequências para falhas dos jogadores)</span>
+          <span className="admin-label">Movimentos (consequências para falhas dos jogadores)</span>
           <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: '0.88rem', lineHeight: 1.7 }}>
             {movimentos.map((m, i) => (
               <li key={i}><strong>{m.nome}:</strong> {m.desc}</li>
@@ -38,12 +38,12 @@ function FichaAmeaca({ numero, nome, subtitulo, instinto, movimentos, saque, pec
         </div>
 
         <div>
-          <span className="admin-label">💀 Saque (se morto)</span>
+          <span className="admin-label">Saque (se morto)</span>
           <p style={{ margin: '4px 0 0', fontSize: '0.88rem' }}>{saque}</p>
         </div>
 
         <div>
-          <span className="admin-label">👁 Peculiaridade</span>
+          <span className="admin-label">Peculiaridade</span>
           <p style={{ margin: '4px 0 0', fontSize: '0.88rem', fontStyle: 'italic' }}>{peculiaridade}</p>
         </div>
       </div>
@@ -209,7 +209,7 @@ const AVENTURAS = [
       'Teste de Pólvora sob pressão com fumaça ardendo nos olhos.',
     ],
     especial: {
-      label: '☁ A Escolha da Sombra',
+      label: 'A Escolha da Sombra',
       texto: 'Com a taverna em chamas, o dono (um civil) fica preso sob uma viga. Os jogadores podem ajudá-lo (não ganham nada, perdem tempo) ou deixá-lo queimar para saquear o tenente e roubar a prata — ganham o dinheiro, mas marcam +1 Sombra.',
     },
   },
@@ -224,7 +224,7 @@ const AVENTURAS = [
       'Teste de Carne para buscar abrigo quando o primeiro tiro de rifle zunir pela orelha.',
     ],
     especial: {
-      label: '☽ A Presença do Juiz',
+      label: 'A Presença do Juiz',
       texto: 'Após o combate, os jogadores olham para cima. O Juiz está sentado em um pico inatingível, desenhando a carnificina em seu caderno. Ele sorri, atira uma moeda de ouro manchada de sangue para baixo, levanta-se e desaparece na poeira.',
     },
   },
@@ -239,7 +239,7 @@ const AVENTURAS = [
       'O Rastreador pode rolar Deserto para achar uma entrada pelos fundos desmoronados da igreja e emboscá-los.',
     ],
     especial: {
-      label: '💧 O Preço de Sangue',
+      label: 'O Preço de Sangue',
       texto: 'Se tomarem o poço, a água está turva, marrom e cheirando a enxofre. Beber exige Carne. 10+: sacia a sede. 7–9: sacia, mas causa vômitos — desvantagem na próxima meia hora. 6−: disenteria (1 Ferimento contínuo até achar remédio).',
     },
   },
@@ -275,19 +275,16 @@ export default function LivroMestre() {
         <Secao titulo="Mecânicas de Dano e Ambiente">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
-              { icone: '🔫', titulo: 'A Pólvora Molha (Armas de 1850)', desc: 'Quando um jogador atirar e rolar 6−, a arma não apenas erra — ela engasga ou explode. O jogador perde o turno destravando ou sofre 1 Ferimento se ela explodir na mão.' },
-              { icone: '☀️', titulo: 'O Sol e a Sede', desc: 'Um dia sem água exige um teste de Deserto. 7–9: delírio (desvantagem em tudo). 6−: 1 Ferimento por desidratação.' },
-              { icone: '💥', titulo: 'Dano de NPCs', desc: 'Tiro de raspão / facada / clava: 1 Ferimento. Tiro direto de rifle / flechada no peito: 2 Ferimentos.' },
+              { titulo: 'A Pólvora Molha (Armas de 1850)', desc: 'Quando um jogador atirar e rolar 6−, a arma não apenas erra — ela engasga ou explode. O jogador perde o turno destravando ou sofre 1 Ferimento se ela explodir na mão.' },
+              { titulo: 'O Sol e a Sede', desc: 'Um dia sem água exige um teste de Deserto. 7–9: delírio (desvantagem em tudo). 6−: 1 Ferimento por desidratação.' },
+              { titulo: 'Dano de NPCs', desc: 'Tiro de raspão / facada / clava: 1 Ferimento. Tiro direto de rifle / flechada no peito: 2 Ferimentos.' },
             ].map(item => (
               <div key={item.titulo} style={{
-                display: 'flex', gap: 14, alignItems: 'flex-start',
                 background: 'rgba(0,0,0,0.15)', borderRadius: 6, padding: '12px 16px',
+                borderLeft: '3px solid var(--marrom-claro)',
               }}>
-                <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{item.icone}</span>
-                <div>
-                  <strong style={{ fontSize: '0.92rem' }}>{item.titulo}</strong>
-                  <p className="note" style={{ margin: '4px 0 0', fontSize: '0.87rem' }}>{item.desc}</p>
-                </div>
+                <strong style={{ fontSize: '0.92rem' }}>{item.titulo}</strong>
+                <p className="note" style={{ margin: '4px 0 0', fontSize: '0.87rem' }}>{item.desc}</p>
               </div>
             ))}
           </div>
@@ -325,7 +322,7 @@ export default function LivroMestre() {
         </div>
 
         {/* ── O Juiz ── */}
-        <Secao titulo="☽ O Juiz Holden — O Antagonista Perfeito">
+        <Secao titulo="O Juiz Holden — O Antagonista Perfeito">
           <div style={{
             background: 'rgba(139,26,26,0.12)',
             border: '1px solid var(--vermelho)',
@@ -341,14 +338,14 @@ export default function LivroMestre() {
           <span className="admin-label">Habilidades Especiais</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8, marginBottom: 20 }}>
             <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 6, padding: '12px 16px' }}>
-              <strong>🗣 A Lábia do Diabo</strong>
+              <strong>A Lábia do Diabo</strong>
               <p className="note" style={{ margin: '6px 0 0', fontSize: '0.87rem' }}>
                 Quando o Juiz discursa, qualquer jogador que tentar atacá-lo ou ignorá-lo rola <strong>Alma</strong>.
                 10+: Resiste. 7–9: Hesita e fica em desvantagem. 6−: Fica aterrorizado e não pode agir contra ele.
               </p>
             </div>
             <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 6, padding: '12px 16px' }}>
-              <strong>🤝 O Pacto Sombrio</strong>
+              <strong>O Pacto Sombrio</strong>
               <p className="note" style={{ margin: '6px 0 0', fontSize: '0.87rem' }}>
                 O Juiz oferece salvação exata (água, pólvora, cura) em troca de um ato vil.
                 Aceitar concede o recurso mas rende <strong>+2 de Sombra</strong> ao jogador.
@@ -409,9 +406,9 @@ export default function LivroMestre() {
 
               {/* Bloco de cenário / situação / estopim */}
               {[
-                { label: '📍 Cenário',   texto: av.cenario },
-                { label: '⚖ Situação',  texto: av.situacao },
-                { label: '💥 Estopim',   texto: av.estopim },
+                { label: 'Cenário',   texto: av.cenario },
+                { label: 'Situação',  texto: av.situacao },
+                { label: 'Estopim',   texto: av.estopim },
               ].map(b => (
                 <div key={b.label} style={{ marginBottom: 12 }}>
                   <span className="admin-label">{b.label}</span>
@@ -421,7 +418,7 @@ export default function LivroMestre() {
 
               {/* Desafios mecânicos */}
               <div style={{ marginBottom: 12 }}>
-                <span className="admin-label">🎲 Desafios Mecânicos</span>
+                <span className="admin-label">Desafios Mecânicos</span>
                 <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: '0.88rem', lineHeight: 1.8 }}>
                   {av.mecanicas.map((m, j) => <li key={j}>{m}</li>)}
                 </ul>
